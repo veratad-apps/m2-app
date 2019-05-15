@@ -396,12 +396,6 @@
                   <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
               </field>
 
-              <field id="westvirginia" type="text" translate="label" sortOrder="500" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>West Virginia</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
               <field id="wyoming" type="text" translate="label" sortOrder="510" showInDefault="1" showInWebsite="1" showInStore="1">
                   <label>Wyoming</label>
                   <comment>Add the age limit here if different from the global.</comment>
