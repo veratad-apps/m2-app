@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <veratad>
+            <general>
+                <title>Veratad</title>
+            </general>
+        </veratad>
+        <age>
+        <general_age>
+                <global_age>21+</global_age>
+        </general_age>
+      </age>
+    </default>
+</config>
