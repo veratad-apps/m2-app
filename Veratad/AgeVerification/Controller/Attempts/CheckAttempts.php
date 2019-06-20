@@ -13,6 +13,7 @@
             protected $helper;
             protected $_veratadHistory;
             protected $orderRepository;
+            protected $scopeConfig;
 
 
             public function __construct(
@@ -21,7 +22,8 @@
                 JsonFactory $resultJsonFactory,
                 \Veratad\AgeVerification\Helper\Data $helper,
                 \Veratad\AgeVerification\Model\HistoryFactory $history,
-                \Magento\Sales\Api\OrderRepositoryInterface $orderRepository
+                \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
+                \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
                 )
             {
 
@@ -30,6 +32,7 @@
                 $this->helper = $helper;
                 $this->_veratadHistory = $history;
                 $this->orderRepository = $orderRepository;
+                $this->scopeConfig = $scopeConfig;
                 return parent::__construct($context);
             }
 
@@ -38,19 +41,14 @@
             {
 
               $order_id = $this->getRequest()->getParam('order_id');
-              $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
-              $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
-              $connection = $resource->getConnection();
-              $tableName = $resource->getTableName('veratad_history'); //gives table name with prefix
-
-              //Select Data from table
-              $result = $connection->fetchAll('SELECT * FROM `'.$tableName.'` WHERE veratad_order_id='.$order_id);
+              $history = $this->_veratadHistory->create();
+		          $collection = $history->getCollection()->addFieldToFilter('veratad_order_id', array('eq' => $order_id))->getData();
 
               $billing_amount = 0;
               $shipping_amount = 0;
               $shipping_action = null;
               $billing_action = null;
-              foreach ($result as $record){
+              foreach ($collection as $record){
                 $address_type = $record['veratad_address_type'];
                 if ($address_type === "billing"){
                   $billing_amount++;
@@ -61,13 +59,15 @@
                 }
               }
 
+              $attempts_allowed_config = $this->scopeConfig->getValue('settings/agematch/agematchattempts', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
               if($shipping_amount === 0){
-                $attempts_allowed = 2;
+                $attempts_allowed = $attempts_allowed_config;
               }else{
-                $attempts_allowed = 3;
+                $attempts_allowed = $attempts_allowed_config + 1;
               }
 
-              $total_attempts = count($result);
+              $total_attempts = count($collection);
 
               //check if they are eligible for a 2nd try
 
@@ -83,7 +83,8 @@
                   "attempts_allowed" => $attempts_allowed,
                   "shipping_amount" => $shipping_amount,
                   "billing_amount" => $billing_amount,
-                  "eligible" => $eligible
+                  "eligible" => $eligible,
+                  "total_attempts" => $total_attempts
                 );
               }else{
                 $return = array(
@@ -91,7 +92,8 @@
                   "attempts_allowed" => $attempts_allowed,
                   "shipping_amount" => $shipping_amount,
                   "billing_amount" => $billing_amount,
-                  "eligible" => $eligible
+                  "eligible" => $eligible,
+                  "total_attempts" => $total_attempts
                 );
               }
 

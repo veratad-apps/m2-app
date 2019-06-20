@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
-        <referenceBlock name="customer_form">
-            <block class="Veratad\AgeVerification\Block\Adminhtml\Customer\View\Custom"
-                   name="customer_edit_tab_view_custom"
-                   template="Veratad_AgeVerification::customer/view/custom.phtml">
+           <referenceBlock name="customer_form">
+             <block class="Veratad\AgeVerification\Block\Adminhtml\Edit\Tab\Custom" name="customer_edit_tab_veratad" >
+              <action method="setTabLabel">
+                  <argument name="label" xsi:type="string">Veratad Age Verification</argument>
+              </action>
             </block>
-        </referenceBlock>
+          </referenceBlock>
     </body>
 </page>

@@ -42,6 +42,10 @@
                     <label>Endpoint</label>
                     <comment>Set the AgeMatch endpoint.</comment>
                 </field>
+                <field id="agematchattempts" type="text" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Attempts</label>
+                    <comment>Set the amount of AgeMatch attempts allowed per order.</comment>
+                </field>
             </group>
             <group id="content" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Content Editor</label>
