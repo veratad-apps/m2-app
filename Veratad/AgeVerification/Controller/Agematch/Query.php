@@ -5,10 +5,10 @@
         use Magento\Framework\App\Action\Context;
         use Magento\Framework\View\Result\PageFactory;
         use Magento\Framework\Controller\Result\JsonFactory;
+        use Magento\Customer\Model\Customer;
 
         class Query extends \Magento\Framework\App\Action\Action
         {
-
 
             protected $helper;
             protected $_veratadHistory;
@@ -21,7 +21,8 @@
                 JsonFactory $resultJsonFactory,
                 \Veratad\AgeVerification\Helper\Data $helper,
                 \Veratad\AgeVerification\Model\HistoryFactory $history,
-                \Magento\Sales\Api\OrderRepositoryInterface $orderRepository
+                \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
+                  \Magento\Customer\Api\CustomerRepositoryInterface $customerRepositoryInterface
                 )
             {
 
@@ -48,10 +49,8 @@
               $phone = $this->getRequest()->getParam('phone');
               $email = $this->getRequest()->getParam('email');
               $order_id = $this->getRequest()->getParam('order_id');
-              $customer_id = null;
+              $customer_id = $this->getRequest()->getParam('customer_id');
               $address_type = "billing";
-
-              $order = $this->orderRepository->get($order_id);
 
               $target = array(
                 "firstname" => $fn,
@@ -71,14 +70,10 @@
                 $return = array(
                   "action" => "PASS"
                 );
-                $order->setVeratadAction("PASS");
-                $order->save();
               }else{
                 $return = array(
                   "action" => "FAIL"
                 );
-                $order->setVeratadAction("FAIL");
-                $order->save();
               }
               $json_result = $this->resultJsonFactory->create();
               return $json_result->setData($return);

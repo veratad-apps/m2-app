@@ -1,56 +1,60 @@
 <?php
-    $order_id = $_GET['id'];
-    $order_id = str_replace("/", "", $order_id);
-    $order_data = $this->getOrderData($order_id);
-    //$orderId = $this->getVeratadOrderId();
-    $fn = $order_data->getBillingAddress()->getFirstname();
-    $ln = $order_data->getBillingAddress()->getLastname();
-    $addr = $order_data->getBillingAddress()->getData("street");
-    $zip = $order_data->getBillingAddress()->getData("postcode");
 
-    $fail_title = $this->getFailTitle();
-    $fail_subtitle = $this->getFailSubTitle();
-    $second_attempt_success_title = $this->getSuccessTitle();
-    $second_attempt_success_subtitle = $this->getSuccessSubTitle();
-    $second_attempt_failure_title = $this->getSecondAttemptFailureTitle();
-    $second_attempt_failure_subtitle = $this->getSecondAttemptFailureSubTitle();
-    $not_eligible_title = $this->getNotEligibleTitle();
-    $not_eligible_subtitle = $this->getNotEligibleSubTitle();
-    $attempts_exceeded_title = $this->getAttemptsExcededTitle();
-    $attempts_exceeded_subtitle = $this->getAttemptsExcededSubTitle();
+    $order_data = $block->getOrderData();
+
+    $fn = $order_data['fn'];
+    $ln = $order_data['ln'];
+    $addr = $order_data['addr'];
+    $zip = $order_data['zip'];
+    $order_id = $order_data['id'];
+    $customer_id = $order_data['customer_id'];
+
+
+    $fail_title = $block->getFailTitle();
+    $fail_subtitle = $block->getFailSubTitle();
+    $second_attempt_success_title = $block->getSuccessTitle();
+    $second_attempt_success_subtitle = $block->getSuccessSubTitle();
+    $second_attempt_failure_title = $block->getSecondAttemptFailureTitle();
+    $second_attempt_failure_subtitle = $block->getSecondAttemptFailureSubTitle();
+    $not_eligible_title = $block->getNotEligibleTitle();
+    $not_eligible_subtitle = $block->getNotEligibleSubTitle();
+    $attempts_exceeded_title = $block->getAttemptsExcededTitle();
+    $attempts_exceeded_subtitle = $block->getAttemptsExcededSubTitle();
+
 ?>
-    <div id="text" style="display:none;">
-    <h2 id="fail_title"><?php echo $fail_title; ?></h2>
-    <p id="fail_subtitle"><?php echo $fail_subtitle; ?></p>
 
-    <h2 id="success_title" style="display:none;"><?php echo $second_attempt_success_title; ?></h2>
-    <p id="success_subtitle" style="display:none;"><?php echo $second_attempt_success_subtitle; ?></p>
+<div id="text" style="display:none;">
+    <h2 id="fail_title"><?php echo $block->escapeHtml($fail_title); ?></h2>
+    <p id="fail_subtitle"><?php echo $block->escapeHtml($fail_subtitle); ?></p>
 
-    <h2 id="second_attempt_failure_title" style="display:none;"><?php echo $second_attempt_failure_title; ?></h2>
-    <p id="second_attempt_failure_subtitle" style="display:none;"><?php echo $second_attempt_failure_subtitle; ?></p>
+    <h2 id="success_title" style="display:none;"><?php echo $block->escapeHtml($second_attempt_success_title); ?></h2>
+    <p id="success_subtitle" style="display:none;"><?php echo $block->escapeHtml($second_attempt_success_subtitle); ?></p>
+
+    <h2 id="second_attempt_failure_title" style="display:none;"><?php echo $block->escapeHtml($second_attempt_failure_title); ?></h2>
+    <p id="second_attempt_failure_subtitle" style="display:none;"><?php echo $block->escapeHtml($second_attempt_failure_subtitle); ?></p>
     </div>
-    <h2 id="attempts_exceeded_title" style="display:none;"><?php echo $attempts_exceeded_title; ?></h2>
-    <p id="attempts_exceeded_subtitle" style="display:none;"><?php echo $attempts_exceeded_subtitle; ?></p>
+    <h2 id="attempts_exceeded_title" style="display:none;"><?php echo $block->escapeHtml($attempts_exceeded_title); ?></h2>
+    <p id="attempts_exceeded_subtitle" style="display:none;"><?php echo $block->escapeHtml($attempts_exceeded_subtitle); ?></p>
 
-    <h2 id="not_eligible_title" style="display:none;"><?php echo $not_eligible_title; ?></h2>
-    <p id="not_eligible_subtitle" style="display:none;"><?php echo $attempts_exceeded_subtitle; ?></p>
+    <h2 id="not_eligible_title" style="display:none;"><?php echo $block->escapeHtml($not_eligible_title); ?></h2>
+    <p id="not_eligible_subtitle" style="display:none;"><?php echo $block->escapeHtml($attempts_exceeded_subtitle); ?></p>
 
         <form name="veratad-av" method="POST" id="veratad-av" style="display:none;">
           <div style="margin-top:10px;">
             <p>Legal First Name</p>
-            <input name="fn" type="text" placeholder="Legal First Name" id="fn" value ="<?php echo $fn; ?>">
+            <input name="fn" type="text" placeholder="Legal First Name" id="fn" value ="<?php echo $block->escapeHtml($fn); ?>">
           </div>
           <div style="margin-top:10px;">
             <p>Legal Last Name</p>
-            <input  name="ln" type="text" placeholder="Legal Last Name" id="ln" value ="<?php echo $ln; ?>">
+            <input  name="ln" type="text" placeholder="Legal Last Name" id="ln" value ="<?php echo $block->escapeHtml($ln); ?>">
           </div>
           <div style="margin-top:10px;">
             <p>Street Address</p>
-            <input name="addr" type="text" placeholder="Street Address" id="addr" value ="<?php echo $addr; ?>">
+            <input name="addr" type="text" placeholder="Street Address" id="addr" value ="<?php echo $block->escapeHtml($addr); ?>">
           </div>
           <div style="margin-top:10px;">
             <p>Zip Code</p>
-            <input name="zip" type="text" placeholder="Zip Code" id="zip" value ="<?php echo $zip; ?>">
+            <input name="zip" type="text" placeholder="Zip Code" id="zip" value ="<?php echo $block->escapeHtml($zip); ?>">
           </div>
           <div style="margin-top:10px;">
             <p>Date of Birth</p>
@@ -60,7 +64,8 @@
             <p>Last 4 of SSN</p>
             <input name="ssn" type="text" placeholder="Last 4 SSN" id="ssn" value ="">
           </div>
-          <input type="hidden" name="order_id" value="<?php echo $order_id; ?>">
+          <input type="hidden" name="order_id" value="<?php echo $block->escapeHtml($order_id); ?>">
+          <input type="hidden" name="customer_id" value="<?php echo $block->escapeHtml($customer_id); ?>">
           <input type="hidden" name="dcam_id" value="">
           <input type="hidden" name="shipping_diff" value="">
           <input type="hidden" name="shipping_action" value="">
@@ -70,15 +75,12 @@
           <button type="submit" id="veratadSubmit" class="btn btn-primary btn-lg pull-right">Verify</button>
         </div>
         </form>
-        <script>
 
+        <script>
         require(['jquery'],function(){
           jQuery(document).ready(function(){
-
-                  var url = "<?php echo $block->getBaseUrl().'ageverification/attempts/checkattempts' ?>";
-
+                  var url = BASE_URL + 'ageverification/attempts/checkattempts';
                   var send = jQuery("#veratad-av").serialize();
-
                     // send ajax
                     jQuery.ajax({
                         url: url, // url where to submit the request
@@ -121,9 +123,37 @@
         <script>
         require(['jquery'],function(){
           jQuery(document).ready(function(){
+
+            function validateForm() {
+              var fn = document.forms["veratad-av"]["fn"].value;
+              var ln = document.forms["veratad-av"]["ln"].value;
+              var addr = document.forms["veratad-av"]["addr"].value;
+              var zip = document.forms["veratad-av"]["zip"].value;
+              if (fn == "") {
+                alert("First name is a required field.");
+                return false;
+              } else if(ln == ""){
+                alert("Last name is a required field.");
+                return false;
+              } else if(addr == ""){
+                alert("Address is a required field.");
+                return false;
+              }else if(zip == ""){
+                alert("Zip code is a required field.");
+                return false;
+              }
+              return true;
+            }
+
+
+
                 // click on button submit
                 jQuery("#veratadSubmit").on('click', function(){
-                  var url = "<?php echo $block->getBaseUrl().'ageverification/agematch/query' ?>";
+                  var url = BASE_URL + 'ageverification/agematch/query';
+
+                  valid = validateForm();
+
+                  if(valid){
 
                     // send ajax
                     jQuery.ajax({
@@ -133,9 +163,7 @@
                         showLoader: true,
                         data : jQuery("#veratad-av").serialize(), // post data || get data
                         success : function(veratad) {
-
                             var action = veratad.action;
-
                             if(action === "PASS"){
                               jQuery('#veratad-av').hide();
                               jQuery('#fail_title').hide();
@@ -149,14 +177,18 @@
                               jQuery('#second_attempt_failure_title').show();
                               jQuery('#second_attempt_failure_subtitle').show();
                             }
-
                           },
                         error: function(xhr, resp, text) {
                             console.log(xhr, resp, text);
                         }
                     })
+                  }else{
                     return false;
+                  }
+                    return false;
+
             });
+
             });
         });
         </script>

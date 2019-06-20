@@ -14,9 +14,12 @@
           protected $_objectManager;
           private $httpContext;
           protected $_veratadHistory;
-          protected $_veratadAccount;
           protected $indexerFactory;
           protected $_indexerCollectionFactory;
+          protected $curlFactory;
+          protected $jsonHelper;
+          protected $orderRepository;
+          protected $_customerRepositoryInterface;
 
 
           public function __construct(
@@ -27,9 +30,12 @@
                 \Magento\Framework\ObjectManager\ObjectManager $objectManager,
                 \Magento\Framework\App\Http\Context $httpContext,
                 \Veratad\AgeVerification\Model\HistoryFactory $history,
-                \Veratad\AgeVerification\Model\VeratadAccountFactory $account,
                 \Magento\Framework\Indexer\IndexerInterfaceFactory $indexerFactory,
-                \Magento\Indexer\Model\Indexer\CollectionFactory $indexerCollectionFactory
+                \Magento\Indexer\Model\Indexer\CollectionFactory $indexerCollectionFactory,
+                \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
+                \Magento\Framework\Json\Helper\Data $jsonHelper,
+              \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
+              \Magento\Customer\Api\CustomerRepositoryInterface $_customerRepositoryInterface
             )
           {
             $this->scopeConfig = $scopeConfig;
@@ -39,9 +45,12 @@
             $this->_objectManager = $objectManager;
             $this->httpContext = $httpContext;
             $this->_veratadHistory = $history;
-            $this->_veratadAccount = $account;
             $this->indexerFactory = $indexerFactory;
             $this->_indexerCollectionFactory = $indexerCollectionFactory;
+            $this->curlFactory = $curlFactory;
+            $this->jsonHelper = $jsonHelper;
+            $this->orderRepository = $orderRepository;
+            $this->customerRepository = $_customerRepositoryInterface;
           }
 
 
@@ -59,17 +68,9 @@
 
           public function setVeratadActionOnAccount($action, $customerid)
           {
-
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
-            $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
-            $connection = $resource->getConnection();
-            $tableName = $resource->getTableName('customer_entity'); //gives table name with prefix
-
-            $sql = "UPDATE `$tableName` SET `veratad_action` = '".$action."' WHERE `entity_id` = '".$customerid."'";
-            $connection->query($sql);
-
+            $customer = $this->customerRepository->getById($customerid);
+            $customer->setCustomAttribute('veratad_action', $action);
             $this->executeIndexCustomerGrid();
-
           }
 
 
@@ -87,19 +88,18 @@
 
                  return $match;
 
-               }
+            }
 
                public function nameDetectionAccount($customerid, $billing, $shipping){
 
-                      $customer = $this->_veratadAccount->create();
-                      $customer->load($customerid,'veratad_customer_id');
+                    $customer = $this->customerRepository->getById($customerid);
+                    $customer_firstname = $customer->getFirstname();
+                    $customer_lastname = $customer->getLastname();
 
                       $billing_firstname = $billing['firstname'];
                       $billing_lastname = $billing['lastname'];
                       $shipping_firstname = $shipping['firstname'];
                       $shipping_lastname = $shipping['lastname'];
-                      $customer_firstname = $customer['veratad_fn'];
-                      $customer_lastname = $customer['veratad_ln'];
 
                       $billingName = strtolower($billing_firstname . $billing_lastname);
                       $shippingName = strtolower($shipping_firstname . $shipping_lastname);
@@ -134,15 +134,6 @@
                    $zip = $target['postcode'];
                    $phone = $target['telephone'];
                    $email = $target['email'];
-                   /*
-                   $custom_attr = $target['customAttributes'];
-                   foreach ($custom_attr as $attr){
-                     $code = $attr['attribute_code'];
-                     if($code === "veratad_dob"){
-                       $dob = $attr['value'];
-                     }
-                   }
-                   */
 
 
                    $data = array(
@@ -165,35 +156,26 @@
                          )
                      );
 
-                     $data_string = json_encode($data);
+                    $data_string = json_encode($data);
+
+                    $httpAdapter = $this->curlFactory->create();
+                    $httpAdapter->write(\Zend_Http_Client::POST, $endpoint, '1.1', ["Content-Type:application/json"],$data_string);
+                    $result = $httpAdapter->read();
+                    $body = \Zend_Http_Response::extractBody($result);
+
+                    $array_result = $this->jsonHelper->jsonDecode($body);
+
                      $data['pass'] = "xxxxx";
                      $log_query = json_encode($data);
                      $logger->info('query:' . $log_query);
 
-                     $ch = curl_init();
-                     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-                     curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
-                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                     curl_setopt($ch, CURLOPT_URL, $endpoint);
-                     curl_setopt($ch, CURLOPT_FAILONERROR, 0);
-                     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
-                     curl_setopt($ch, CURLOPT_TIMEOUT, 200);
-                     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-
-                     $result = curl_exec($ch);
-
-                     $logger->info('response:' . $result);
-
-                     $array_result = json_decode($result, true);
+                     $logger->info('response:' . $body);
 
                      $action = $array_result['result']['action'];
                      $detail = $array_result['result']['detail'];
                      $timestamp = $array_result['meta']['timestamp'];
                      $confirmation = $array_result['meta']['confirmation'];
                      $manual = "FALSE";
-
 
                      $this->_veratadHistory->create()->setData(
                        array("veratad_action" => $action,
@@ -206,28 +188,18 @@
                        "veratad_address_type" => $address_type,
                      ))->save();
 
+                     $order = $this->orderRepository->get($orderid);
+                     $order->setVeratadAction($action);
+                     $order->save();
+
+                     /*
                      if($customerid){
-                       $this->_veratadAccount->create()->setData(
-                         array("veratad_action" => $action,
-                         "veratad_detail" => $detail,
-                         "veratad_confirmation" => $confirmation,
-                         "veratad_timestamp" => $timestamp,
-                         "veratad_fn" => $fn,
-                         "veratad_ln" => $ln,
-                         "veratad_customer_id" => $customerid
-                       ))->save();
-
-
-                       $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
-                       $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
-                       $connection = $resource->getConnection();
-                       $tableName = $resource->getTableName('customer_entity'); //gives table name with prefix
-
-                       $sql = "UPDATE `$tableName` SET `veratad_action` = '".$action."' WHERE `entity_id` = '".$customerid."'";
-                       $connection->query($sql);
-
+                       $customer = $this->_customerFactory->create();
+                       $logger->info("customer model =" . json_encode($customer));
+                       $customer->setCustomAttribute('veratad_action', $action);
+                       $customer->save();
                      }
-
+                     */
 
                      $final = ($action === "PASS");
 
@@ -238,14 +210,20 @@
               public function getVeratadAccountAction()
               {
                   $customerid = $this->request->getParam('id');
-                  $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
-                  $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
-                  $connection = $resource->getConnection();
-                  $tableName = $resource->getTableName('customer_entity'); //gives table name with prefix
+                  $history = $this->_veratadHistory->create();
+                  $collection = $history->getCollection()->addFieldToFilter('veratad_customer_id', array('eq' => $customerid))->getData();
+                  $last = end($collection);
+                  $action = $last['veratad_action'];
+                  return $action;
+              }
 
-                  //Select Data from table
-                  $result = $connection->fetchAll('SELECT * FROM `'.$tableName.'` WHERE entity_id='.$customerid);
-                  return $result;
+              public function getVeratadAccountActionById($customerid)
+              {
+                  $history = $this->_veratadHistory->create();
+                  $collection = $history->getCollection()->addFieldToFilter('veratad_customer_id', array('eq' => $customerid))->getData();
+                  $last = end($collection);
+                  $action = $last['veratad_action'];
+                  return $action;
               }
 
               public function getVeratadCustomerId()
@@ -257,33 +235,17 @@
               public function getVeratadAccountHistoryHelper()
               {
                 $customerid = $this->request->getParam('id');
-                $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
-                $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
-                $connection = $resource->getConnection();
-                $tableName = $resource->getTableName('veratad_history'); //gives table name with prefix
-
-                //Select Data from table
-                $result = $connection->fetchAll('SELECT * FROM `'.$tableName.'` WHERE veratad_customer_id='.$customerid);
+                $history = $this->_veratadHistory->create();
+                $collection = $history->getCollection()->addFieldToFilter('veratad_customer_id', array('eq' => $customerid))->getData();
                 return $result;
-
               }
 
               public function getVeratadAccountDetails()
               {
 
-                $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/helper.log');
-                $logger = new \Zend\Log\Logger();
-                $logger->addWriter($writer);
-
                 $customerid = $this->request->getParam('id');
-                $logger->info("Customer ID = $customerid");
-                $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
-                $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
-                $connection = $resource->getConnection();
-                $tableName = $resource->getTableName('veratad_account'); //gives table name with prefix
-
-                //Select Data from table
-                $result = $connection->fetchAll('SELECT * FROM `'.$tableName.'` WHERE veratad_customer_id='.$customerid);
+                $history = $this->_veratadHistory->create();
+                $collection = $history->getCollection()->addFieldToFilter('veratad_customer_id', array('eq' => $customerid))->getData();
                 return $result;
               }
 

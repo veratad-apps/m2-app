@@ -18,7 +18,6 @@
             protected $_veratadHistory;
             protected $_orderFactory;
             protected $date;
-            protected $_veratadAccountFactory;
             protected $helper;
 
             /**
@@ -35,7 +34,6 @@
                 \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
                 \Magento\Sales\Model\ResourceModel\Order $orderResourceModel,
                 \Magento\Framework\Stdlib\DateTime\DateTime $date,
-                \Veratad\AgeVerification\Model\VeratadAccountFactory $veratadAccount,
                 \Veratad\AgeVerification\Helper\Data $helper
                 )
             {
@@ -46,7 +44,6 @@
                  $this->_veratadHistory = $db;
                  $this->_orderFactory = $orderFactory;
                  $this->date = $date;
-                 $this->_veratadAccountFactory = $veratadAccount;
                  $this->helper = $helper;
                 return parent::__construct($context);
             }
@@ -74,7 +71,6 @@
                   "veratad_customer_id" => $customerid,
                 ))->save();
 
-                $this->helper->setVeratadActionOnAccount($action, $customerid);
               }
 
             }

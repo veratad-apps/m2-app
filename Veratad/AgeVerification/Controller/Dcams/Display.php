@@ -1,7 +1,5 @@
 <?php
-
 namespace Veratad\AgeVerification\Controller\Dcams;
-
 class Display extends \Magento\Framework\App\Action\Action
 {
     public function execute()

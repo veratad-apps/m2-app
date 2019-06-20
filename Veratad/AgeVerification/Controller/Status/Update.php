@@ -18,7 +18,6 @@
             protected $_veratadHistory;
             protected $_orderFactory;
             protected $date;
-            protected $_veratadAccountFactory;
             protected $orderRepository;
 
             /**
@@ -34,8 +33,7 @@
                 \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
                 \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
                 \Magento\Sales\Model\ResourceModel\Order $orderResourceModel,
-                \Magento\Framework\Stdlib\DateTime\DateTime $date,
-                \Veratad\AgeVerification\Model\VeratadAccountFactory $veratadAccount
+                \Magento\Framework\Stdlib\DateTime\DateTime $date
                 )
             {
 
@@ -45,7 +43,6 @@
                  $this->_veratadHistory = $db;
                  $this->_orderFactory = $orderFactory;
                  $this->date = $date;
-                 $this->_veratadAccountFactory = $veratadAccount;
                  $this->orderRepository = $orderRepository;
                 return parent::__construct($context);
             }
@@ -75,6 +72,7 @@
                 $order = $this->orderRepository->get($orderid);
                 $order->setVeratadAction($action);
                 $order->save();
+
               }
 
             }

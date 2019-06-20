@@ -1,11 +1,8 @@
 <?php
-
         namespace Veratad\AgeVerification\Setup;
-
         use Magento\Framework\Setup\UpgradeSchemaInterface;
         use Magento\Framework\Setup\SchemaSetupInterface;
         use Magento\Framework\Setup\ModuleContextInterface;
-
         class UpgradeSchema implements UpgradeSchemaInterface
         {
             /**
@@ -18,14 +15,12 @@
             public function upgrade(SchemaSetupInterface $setup, ModuleContextInterface $context)
             {
                 $setup->startSetup();
-
                 $quoteAddressTable = 'quote_address';
                 $orderTable = 'sales_order_address';
                 $gridTable = 'sales_order_grid';
                 $salesTable = 'sales_order';
                 $customerTable = 'customer_entity';
                 $quoteTable = 'quote';
-
                 //customer action
                 $setup->getConnection()
                     ->addColumn(
@@ -43,7 +38,6 @@
                             'default' => 'NOT VERIFIED'
                         ]
                     );
-
                     $setup->getConnection()
                         ->addColumn(
                             $setup->getTable($orderTable),
@@ -114,7 +108,6 @@
                               'comment' =>'Veratad Action'
                           ]
                 );
-
                 $setup->endSetup();
             }
         }

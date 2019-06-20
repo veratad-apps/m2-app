@@ -1,13 +1,20 @@
 <?php
+		namespace Veratad\AgeVerification\Model\ResourceModel;
 
-				namespace Veratad\AgeVerification\Model\ResourceModel;
-				class History extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
-				{
-				/**
-				* Define main table
-				*/
-				protected function _construct()
-				{
-				$this->_init('veratad_history', 'id');   //here id is the primary key of custom table
-				}
-				}
+
+		class History extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
+		{
+
+			public function __construct(
+				\Magento\Framework\Model\ResourceModel\Db\Context $context
+			)
+			{
+				parent::__construct($context);
+			}
+
+			protected function _construct()
+			{
+				$this->_init('veratad_history', 'veratad_id');
+			}
+
+		}

@@ -1,21 +1,17 @@
 <?php
 
-$details = $this->getVeratadDetails();
-$username = $this->getCurrentUser();
-$orderId = $this->veratadOrderId();
-$order_action = $this->getVeratadActionOrder();
+$details = $block->getVeratadDetails();
+$username = $block->getCurrentUser();
+$orderId = $block->veratadOrderId();
+$order_action = $block->getVeratadActionOrder();
 
-//$action = $details['veratad_action'];
-/*
-$detail = end($details);
-$action_billing = $detail['veratad_action'];
-$action_shipping = $detail['veratad_shipping_action'];
-$action = $this->veratadStatusOnOrder();
-*/
+
+$status_url =  $block->escapeUrl($block->getBaseUrl().'ageverification/status/update/');
+
 ?>
 <section class="admin__page-section order-view-account-information">
     <div class="admin__page-section-title">
-        <span class="title">Age Verification: <?php echo $order_action; ?></span>
+        <span class="title">Veratad Age Verification: <?php echo $block->escapeHtml($order_action); ?></span>
     </div>
     <div class="admin__page-section-content">
         <div class="admin__page-section-item order-payment-method">
@@ -37,15 +33,23 @@ $action = $this->veratadStatusOnOrder();
           				</tr>
           			</thead>
           			<tbody class="even">
-                  <?php foreach ($details as $detail): ?>
+                  <?php foreach ($details as $detail):
+                    $timestamp = $detail['veratad_timestamp'];
+                    $confirmation = $detail['veratad_confirmation'];
+                    $action = $detail['veratad_action'];
+                    $veratad_detail = $detail['veratad_detail'];
+                    $address_type = $detail['veratad_address_type'];
+                    $override = $detail['veratad_override'];
+                    $override_user = $detail['veratad_override_user'];
+                    ?>
           				<tr>
-          					<td><?php echo $detail['veratad_timestamp'] ?></td>
-          					<td ><?php echo $detail['veratad_confirmation'] ?></td>
-          					<td ><?php echo $detail['veratad_action'] ?></td>
-          					<td><?php echo $detail['veratad_detail'] ?></td>
-                    <td><?php echo $detail['veratad_address_type'] ?></td>
-          					<td ><?php echo $detail['veratad_override'] ?></td>
-          					<td ><?php echo $detail['veratad_override_user'] ?></td>
+          					<td><?php echo  $block->escapeHtml($timestamp); ?></td>
+          					<td ><?php echo $block->escapeHtml($confirmation); ?></td>
+          					<td ><?php echo $block->escapeHtml($action); ?></td>
+          					<td><?php echo $block->escapeHtml($veratad_detail); ?></td>
+                    <td><?php echo $block->escapeHtml($address_type); ?></td>
+          					<td ><?php echo $block->escapeHtml($override); ?></td>
+          					<td ><?php echo $block->escapeHtml($override_user); ?></td>
           				</tr>
                   <?php endforeach; ?>
           			</tbody>
@@ -53,8 +57,8 @@ $action = $this->veratadStatusOnOrder();
           	</div>
             <div class="admin__field">
               <form id="veratad">
-              <input type="hidden" name="order_id" value="<?php echo $orderId ?>">
-              <input type="hidden" name="username" value="<?php echo $username ?>">
+              <input type="hidden" name="order_id" value="<?php echo $block->escapeHtml($orderId); ?>">
+              <input type="hidden" name="username" value="<?php echo $block->escapeHtml($username); ?>">
                 <label for="status" class="admin__field-label">Change Verification Status</label>
                 <div class="admin__field-control" style="margin-top:10px;">
                     <select name="status" id="veratad_status" class="admin__control-select">
@@ -76,8 +80,7 @@ $action = $this->veratadStatusOnOrder();
     jQuery(document).ready(function(){
           // click on button submit
           jQuery("#changeStatus").on('click', function(){
-            var url = "<?php echo $block->getBaseUrl().'ageverification/status/update/' ?>";
-            console.log(url);
+            var url = "<?php echo $status_url; ?>";
             var send = jQuery("#veratad").serialize();
             console.log(send);
               // send ajax

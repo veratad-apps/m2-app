@@ -9,6 +9,7 @@
           protected $_veratadHistory;
           protected $authSession;
           protected $orderRepository;
+          protected $_escaper;
 
 
           public function __construct(
@@ -17,6 +18,7 @@
             \Veratad\AgeVerification\Model\HistoryFactory $history,
             \Magento\Backend\Model\Auth\Session $authSession,
             \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
+            \Magento\Framework\Escaper $_escaper,
             array $data = []
             )
           {
@@ -24,46 +26,24 @@
             $this->_veratadHistory = $history;
             $this->authSession = $authSession;
             $this->orderRepository = $orderRepository;
+            $this->_escaper = $_escaper;
             parent::__construct($context, $data);
           }
 
           public function getVeratadAccountHistory()
           {
-            $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/block.log');
-            $logger = new \Zend\Log\Logger();
-            $logger->addWriter($writer);
-
             $customerid = $this->request->getParam('id');
-
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
-            $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
-            $connection = $resource->getConnection();
-            $tableName = $resource->getTableName('veratad_history'); //gives table name with prefix
-
-            //Select Data from table
-            $result = $connection->fetchAll('SELECT * FROM `'.$tableName.'` WHERE veratad_customer_id='.$customerid);
-            return $result;
-
+            $history = $this->_veratadHistory->create();
+            $collection = $history->getCollection()->addFieldToFilter('veratad_customer_id', array('eq' => $customerid))->getData();
+            return $collection;
           }
 
           public function getVeratadDetails()
           {
-
-            $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/block.log');
-            $logger = new \Zend\Log\Logger();
-            $logger->addWriter($writer);
-
-            $orderid = $this->request->getParam('order_id');
-
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
-            $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
-            $connection = $resource->getConnection();
-            $tableName = $resource->getTableName('veratad_history'); //gives table name with prefix
-
-            //Select Data from table
-            $result = $connection->fetchAll('SELECT * FROM `'.$tableName.'` WHERE veratad_order_id='.$orderid);
-            return $result;
-
+            $order_id = $this->request->getParam('order_id');
+            $history = $this->_veratadHistory->create();
+            $collection = $history->getCollection()->addFieldToFilter('veratad_order_id', array('eq' => $order_id))->getData();
+            return $collection;
           }
 
           public function getCurrentUser()
@@ -81,9 +61,11 @@
 
           public function getVeratadActionOrder()
           {
-            $orderid = $this->request->getParam('order_id');
-            $order = $this->orderRepository->get($orderid);
-            $action = $order->getVeratadAction();
+            $order_id = $this->request->getParam('order_id');
+            $history = $this->_veratadHistory->create();
+            $collection = $history->getCollection()->addFieldToFilter('veratad_order_id', array('eq' => $order_id))->getData();
+            $last = end($collection);
+            $action = $last['veratad_action'];
             return $action;
           }
 
