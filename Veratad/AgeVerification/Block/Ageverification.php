@@ -12,14 +12,22 @@
           protected $orderRepository;
           protected $_storeManager;
           protected $_escaper;
+          protected $_checkoutSession;
+          protected $_order;
+          protected $messageManager;
+          protected $_veratadHistory;
 
           public function __construct(
+            \Magento\Framework\View\Element\Template\Context $context,
             \Magento\Framework\App\Request\Http $request,
             \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
             \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
             \Magento\Store\Model\StoreManagerInterface $storeManager,
-            \Magento\Framework\View\Element\Template\Context $context,
             \Magento\Framework\Escaper $_escaper,
+            \Magento\Checkout\Model\Session $checkoutSession,
+            \Magento\Sales\Model\Order $order,
+            \Veratad\AgeVerification\Model\HistoryFactory $history,
+            \Magento\Framework\Message\ManagerInterface $messageManager,
             array $data = []
             )
           {
@@ -29,6 +37,10 @@
             $this->_storeManager = $storeManager;
             $this->orderRepository = $orderRepository;
             $this->_escaper = $_escaper;
+            $this->_checkoutSession = $checkoutSession;
+            $this->_order = $order;
+            $this->_veratadHistory = $history;
+            $this->messageManager = $messageManager;
           }
 
 
@@ -39,70 +51,46 @@
            return $this;
          }
 
-         public function getFailTitle()
-         {
-           $failtext = $this->scopeConfig->getValue('settings/content/agematch_fail_title', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-           return $failtext;
-         }
 
          public function getFailSubTitle()
           {
-            $failtext = $this->scopeConfig->getValue('settings/content/agematch_fail_subtitle', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            return $failtext;
+            return $this->scopeConfig->getValue('settings/content/agematch_fail_subtitle', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
           }
-          public function getSuccessTitle()
-          {
-            $failtext = $this->scopeConfig->getValue('settings/content/agematch_success_title', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            return $failtext;
-          }
+
           public function getSuccessSubTitle()
           {
             $failtext = $this->scopeConfig->getValue('settings/content/agematch_success_subtitle', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            return $failtext;
+            return $this->messageManager->addSuccess(__($failtext));
           }
-          public function getSecondAttemptFailureTitle()
-          {
-            $failtext = $this->scopeConfig->getValue('settings/content/agematch_failure_title', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            return $failtext;
-          }
+
           public function getSecondAttemptFailureSubTitle()
           {
             $failtext = $this->scopeConfig->getValue('settings/content/agematch_failure_subtitle', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            return $failtext;
+            return $this->messageManager->addError(__($failtext));
           }
-          public function getNotEligibleTitle()
-          {
-            $failtext = $this->scopeConfig->getValue('settings/content/agematch_not_eligible_title', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            return $failtext;
-          }
+
           public function getNotEligibleSubTitle()
           {
             $failtext = $this->scopeConfig->getValue('settings/content/agematch_not_eligible_subtitle', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            return $failtext;
+            return $this->messageManager->addError(__($failtext));
           }
-          public function getAttemptsExcededTitle()
-          {
-            $failtext = $this->scopeConfig->getValue('settings/content/agematch_exceeded_title', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            return $failtext;
-          }
+
           public function getAttemptsExcededSubTitle()
           {
             $failtext = $this->scopeConfig->getValue('settings/content/agematch_exceeded_subtitle', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-            return $failtext;
+            return $this->messageManager->addError(__($failtext));
           }
           public function getOrderData()
           {
-            $id = $this->request->getParam('id');
-            $id = str_replace("/", "", $id);
+            $order_session = $this->_order->load($this->_checkoutSession->getLastOrderId());
+            $id = $order_session->getId(); //order ID
             $order = $this->orderRepository->get($id);
-            $order->getBillingAddress()->getFirstname();
-            $order->getBillingAddress()->getLastname();
-            $order->getBillingAddress()->getData("street");
 
             $data = array(
               'fn' => $order->getBillingAddress()->getFirstname(),
               'ln' => $order->getBillingAddress()->getLastname(),
               'addr' => $order->getBillingAddress()->getData("street"),
+              'state' => $order->getBillingAddress()->getData("region"),
               'zip' => $order->getBillingAddress()->getData("postcode"),
               'id' => $id,
               'customer_id' => $order->getCustomerId()
@@ -111,6 +99,75 @@
             return $data;
           }
 
+          public function getDcamsSiteName()
+          {
+           return $this->scopeConfig->getValue('settings/dcams/dcams_site_name', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+         }
+
+         public function getDcamsRules()
+         {
+          return $this->scopeConfig->getValue('settings/dcams/dcams_rules', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        }
+
+        public function getDobVisible()
+        {
+         return $this->scopeConfig->getValue('settings/agematch/dobvisible_additional', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        }
+
+        public function getDobRequired()
+        {
+         return $this->scopeConfig->getValue('settings/agematch/dobrequired_additional', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        }
+
+        public function getSsnVisible()
+        {
+         return $this->scopeConfig->getValue('settings/agematch/ssnvisible_additional', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        }
+
+        public function getSsnRequired()
+        {
+         return $this->scopeConfig->getValue('settings/agematch/ssnrequired_additional', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        }
+
+        public function getDcamsSuccessMessage()
+        {
+         return $this->scopeConfig->getValue('settings/content/dcams_success', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        }
+
+        public function getDcamsFailureMessage()
+        {
+         return $this->scopeConfig->getValue('settings/content/dcams_failure', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        }
+
+        public function getDcamsId()
+        {
+            $order_session = $this->_order->load($this->_checkoutSession->getLastOrderId());
+            $id = $order_session->getId(); //order ID
+            $history = $this->_veratadHistory->create();
+            $collection = $history->getCollection()->addFieldToFilter('veratad_order_id', array('eq' => $id))->getData();
+            $last = end($collection);
+            $dcams_id = $last['veratad_dcams_id'];
+            return $dcams_id;
+        }
+
+        public function getAgeState($state)
+        {
+          $global_age_to_check = $this->scopeConfig->getValue('age/general_age/global_age', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+          if(!$global_age_to_check){
+            $age = "21+";
+          }
+
+          $state_to_check = strtolower($state);
+          $state_age_requirement = $this->scopeConfig->getValue('age/general_age/'.$state_to_check, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+          if($state_age_requirement){
+            $age = $state_age_requirement;
+          }else{
+            $age = $age;
+          }
+
+          return $age;
+        }
 
           public function getStoreManagerDataBaseUrl()
        {

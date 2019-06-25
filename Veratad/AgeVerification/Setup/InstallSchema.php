@@ -46,6 +46,13 @@
     					[],
     					'Veratad Order ID'
     				)
+            ->addColumn(
+    					'veratad_quote_id',
+    					\Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+    					255,
+    					['nullable => true'],
+    					'Veratad Quote ID'
+    				)
     				->addColumn(
     					'veratad_confirmation',
     					\Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
@@ -59,6 +66,13 @@
               255,
               [],
               'Veratad Timestamp'
+            )
+            ->addColumn(
+              'veratad_dcams_id',
+              \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+              255,
+              [],
+              'Veratad DCAMS ID'
             )
     				->addColumn(
     					'veratad_override',
@@ -87,6 +101,20 @@
             255,
             [],
             'Veratad Address Type'
+            )
+            ->addColumn(
+            'veratad_id_front',
+            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            255,
+            [],
+            'Veratad DCAMS ID Front Link'
+            )
+            ->addColumn(
+            'veratad_id_back',
+            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            255,
+            [],
+            'Veratad DCAMS ID Back Link'
             )
     				->setComment('Veratad History Table');
     			$installer->getConnection()->createTable($table);

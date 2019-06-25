@@ -13,7 +13,6 @@
                 <field id="enabled" type="select" translate="label,comment,tooltip" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <config_path>veratad/general/enabled</config_path>
                     <comment>Enable the Veratad module here.</comment>
                     <tooltip>Once enabled the Veratad module will work for all stores.</tooltip>
                 </field>
@@ -43,53 +42,90 @@
                     <comment>Set the AgeMatch endpoint.</comment>
                 </field>
                 <field id="agematchattempts" type="text" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Attempts</label>
+                    <label>Total AgeMatch Attempts</label>
                     <comment>Set the amount of AgeMatch attempts allowed per order.</comment>
                 </field>
+                <field id="dobvisible" type="select" translate="label,comment,tooltip" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Collect DOB at Checkout</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Should Date of Birth be added to the checkout form?</comment>
+                  </field>
+                  <field id="dobrequired" type="select" translate="label,comment,tooltip" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                      <label>Require DOB at Checkout</label>
+                      <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                      <comment>Should Date of Birth be required at checkout form?</comment>
+                    </field>
+                    <field id="dobvisible_additional" type="select" translate="label,comment,tooltip" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Collect DOB at Addtional Attempt</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment>Should Date of Birth be added to the additional attempt?</comment>
+                      </field>
+                      <field id="dobrequired_additional" type="select" translate="label,comment,tooltip" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                          <label>Require DOB at Additional Attempt</label>
+                          <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                          <comment>Should Date of Birth be required at additional attempt?</comment>
+                        </field>
+                        <field id="ssnvisible_additional" type="select" translate="label,comment,tooltip" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                          <label>Collect Last 4 SSN at Addtional Attempt</label>
+                          <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                          <comment>Should Last 4 SSN be added to the additional attempt?</comment>
+                        </field>
+                        <field id="ssnrequired_additional" type="select" translate="label,comment,tooltip" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                          <label>Require Last 4 SSN at Additional Attempt</label>
+                          <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                          <comment>Should Last 4 SSN be required at additional attempt?</comment>
+                    </field>
             </group>
             <group id="content" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Content Editor</label>
-                <field id="agematch_fail_title" type="textarea" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>AgeMatch Failure Title</label>
-                    <comment>This is the title a user will see when they fail AgeMatch first attempt.</comment>
-                </field>
                 <field id="agematch_fail_subtitle" type="textarea" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>AgeMatch Failure Subtitle</label>
-                    <comment>This is the subtitle a user will see when they fail AgeMatch first attempt.</comment>
-                </field>
-                <field id="agematch_success_title" type="textarea" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>AgeMatch Second Attempt Success Title</label>
-                    <comment>This is the title a user will see when they PASS AgeMatch second attempt.</comment>
+                    <label>AgeMatch Failure</label>
+                    <comment>Introduction text to the user once they failed the first AgeMatch attempt and are about to try again.</comment>
                 </field>
                 <field id="agematch_success_subtitle" type="textarea" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>AgeMatch Second Attempt Success Subtitle</label>
-                    <comment>This is the title a user will see when they PASS AgeMatch second attempt.</comment>
-                </field>
-                <field id="agematch_failure_title" type="textarea" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>AgeMatch Second Attempt Failure Title</label>
-                    <comment>This is the title a user will see when they FAIL AgeMatch second attempt.</comment>
+                    <label>AgeMatch Second Attempt Success</label>
+                    <comment>Text a user will see when they PASS AgeMatch second attempt.</comment>
                 </field>
                 <field id="agematch_failure_subtitle" type="textarea" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>AgeMatch Second Attempt Failure Subtitle</label>
-                    <comment>This is the title a user will see when they FAIL AgeMatch second attempt.</comment>
-                </field>
-                <field id="agematch_exceeded_title" type="textarea" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>AgeMatch Attempts Exceeded Title</label>
-                    <comment>This is the title a user will see when they have no more attempts.</comment>
+                    <label>AgeMatch Second Attempt Failure</label>
+                    <comment>Text a user will see when they FAIL AgeMatch multiple attempts.</comment>
                 </field>
                 <field id="agematch_exceeded_subtitle" type="textarea" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>AgeMatch Attempts Exceeded Subtitle</label>
-                    <comment>This is the subtitle a user will see when they have no more attempts.</comment>
+                    <label>AgeMatch Attempts Exceeded</label>
+                    <comment>Text a user will see when they have no more attempts.</comment>
                 </field>
-                <field id="agematch_not_eligible_title" type="textarea" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>AgeMatch Second Attempt Not Eligible Title</label>
-                    <comment>This is the title a user will see when they are not eligible for a second attempt.</comment>
+                <field id="dcams_intro" type="textarea" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>DCAMS Intro Text</label>
+                    <comment>Text that a user will see if right before they upload an ID.</comment>
                 </field>
-                <field id="agematch_not_eligible_subtitle" type="textarea" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>AgeMatch Second Attempt Not Eligible Subtitle</label>
-                    <comment>This is the subtitle a user will see when they are not eligible for a second attempt.</comment>
+                <field id="dcams_success" type="textarea" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>DCAMS Success Text</label>
+                    <comment>Text that a user will see if they pass DCAMS instant scan.</comment>
+                </field>
+                <field id="dcams_failure" type="textarea" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>DCAMS Failure Text</label>
+                    <comment>Text that a user will see if they fail DCAMS instant scan.</comment>
                 </field>
             </group>
+              <group id="dcams" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>DCAMS</label>
+                <field id="dcams_user" type="text" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>DCAMS User</label>
+                    <comment>Enter your DCAMS API Username.</comment>
+                </field>
+                <field id="dcams_pass" type="password" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>DCAMS Password</label>
+                    <comment>Enter your DCAMS API Password</comment>
+                </field>
+                <field id="dcams_site_name" type="text" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>DCAMS Site Name</label>
+                    <comment>If entered then DCAMS will trigger once all AgeMatch atttempts are completed.</comment>
+                </field>
+                <field id="dcams_rules" type="text" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>DCAMS+ Rules</label>
+                    <comment>Enter the DCAMS+ ruleset here. If empty the default will be used.</comment>
+                </field>
+              </group>
             <group id="customer_groups" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Customer Groups</label>
                 <comment>Select groups to exclude from verification.</comment>

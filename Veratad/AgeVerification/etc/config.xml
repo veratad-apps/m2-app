@@ -6,6 +6,24 @@
                 <title>Veratad</title>
             </general>
         </veratad>
+        <settings>
+          <general>
+            <to_verify>auto_detect</to_verify>
+            <enabled>1</enabled>
+            <blockorder>0</blockorder>
+          </general>
+          <agematch>
+            <url>https://production.idresponse.com/process/comprehensive/gateway</url>
+            <agematchattempts>2</agematchattempts>
+          </agematch>
+          <content>
+            <agematch_fail_subtitle>We were unable to verify your age. Please edit your details below and try again.</agematch_fail_subtitle>
+            <agematch_success_subtitle>You are age verified! There is nothing more for you to do. Your order is on the way.</agematch_success_subtitle>
+            <agematch_failure_subtitle>We are still having problems verifying your age. Make sure you DOB and/or SSN are correct and try an alternate address.</agematch_failure_subtitle>
+            <agematch_exceeded_subtitle>You no longer have any attempts. Please contact customer service at 888-888-8888.</agematch_exceeded_subtitle>
+            <block_fail_text>We were unable to verify your age. Please go back and edit your details and try again or call 888-888-8888.</block_fail_text>
+          </content>
+        </settings>
         <age>
         <general_age>
                 <global_age>21+</global_age>

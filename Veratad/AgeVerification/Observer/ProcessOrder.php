@@ -17,6 +17,8 @@
           private $responseFactory;
           private $url;
           protected $orderRepository;
+          protected $checkoutSession;
+          protected $quoteRepository;
 
           public function __construct(
             \Veratad\AgeVerification\Model\Query\Api $veratadCall,
@@ -27,7 +29,9 @@
             \Veratad\AgeVerification\Model\HistoryFactory $history,
             \Magento\Framework\App\ResponseFactory $responseFactory,
             \Magento\Framework\UrlInterface $url,
-            \Magento\Sales\Api\OrderRepositoryInterface $orderRepository
+            \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
+            \Magento\Checkout\Model\Session $checkoutSession,
+            \Magento\Quote\Api\CartRepositoryInterface $quoteRepository
           ) {
            $this->_veratadCall = $veratadCall;
             $this->_isExcluded = $isExcluded;
@@ -38,13 +42,15 @@
             $this->responseFactory = $responseFactory;
             $this->url = $url;
             $this->orderRepository = $orderRepository;
+            $this->checkoutSession = $checkoutSession;
+            $this->quoteRepository = $quoteRepository;
           }
 
 
 
             public function execute(\Magento\Framework\Event\Observer $observer ) {
 
-              $enabled = $this->scopeConfig->getValue('veratad/general/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+              $enabled = $this->scopeConfig->getValue('settings/general/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
               if($enabled){
 
@@ -54,6 +60,11 @@
                 $order = $this->orderRepository->get($order_id);
                 $billing = $order->getBillingAddress()->getData();
                 $shipping = $order->getShippingAddress()->getData();
+
+                $quote_id = $order->getQuoteId();
+                $quote = $this->quoteRepository->get($quote_id);
+                $dob = $quote->getVeratadDob();
+
 
                 if ($this->customerSession->isLoggedIn()) {
                   $customer_id = $this->customerSession->getCustomer()->getId();
@@ -65,14 +76,14 @@
                 }
 
                 if(!$excluded){
-                  $isVerified = $this->_veratadCall->veratadCaller($billing, $shipping, $order_id, $customer_id);
+                  $isVerified = $this->_veratadCall->veratadCaller($billing, $shipping, $order_id, $customer_id, $dob);
                   if (!$isVerified){
                     if ($this->customerSession->isLoggedIn()) {
                     $this->helper->setVeratadActionOnAccount("FAIL", $customer_id);
                     }
                     //$order->setVeratadAction("FAIL");
                     //$order->save();
-                    $redirectionUrl = $this->url->getUrl("ageverification/dcams/display?id=$order_id");
+                    $redirectionUrl = $this->url->getUrl("ageverification/dcams/display");
                     $this->responseFactory->create()->setRedirect($redirectionUrl)->sendResponse();
                     return $this;
                   }else{

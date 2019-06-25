@@ -54,6 +54,8 @@
                 //$customerId = $this->getRequest()->getParam('customer_id');
                 $username = $this->getRequest()->getParam('username');
                 $action = $this->getRequest()->getParam('status');
+                $front = $this->getRequest()->getParam('front_id');
+                $back = $this->getRequest()->getParam('back_id');
                 $detail = "TRUE";
                 $timestamp = $this->date->gmtDate();
                 $orderid = $this->getRequest()->getParam('order_id');
@@ -67,6 +69,8 @@
                   "veratad_override" => $detail,
                   "veratad_order_id" => $orderid,
                   "veratad_override_user" => $username,
+                  "veratad_id_front" => $front,
+                  "veratad_id_back" => $back
                 ))->save();
 
                 $order = $this->orderRepository->get($orderid);
