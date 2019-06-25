@@ -13,6 +13,9 @@
             protected $helper;
             protected $_veratadHistory;
             protected $orderRepository;
+            protected $jsonHelper;
+            private $scopeConfig;
+            protected $messageManager;
 
 
             public function __construct(
@@ -22,7 +25,10 @@
                 \Veratad\AgeVerification\Helper\Data $helper,
                 \Veratad\AgeVerification\Model\HistoryFactory $history,
                 \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
-                  \Magento\Customer\Api\CustomerRepositoryInterface $customerRepositoryInterface
+                  \Magento\Customer\Api\CustomerRepositoryInterface $customerRepositoryInterface,
+                  \Magento\Framework\Json\Helper\Data $jsonHelper,
+                  \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+                  \Magento\Framework\Message\ManagerInterface $messageManager
                 )
             {
 
@@ -31,6 +37,9 @@
                 $this->helper = $helper;
                 $this->_veratadHistory = $history;
                 $this->orderRepository = $orderRepository;
+                $this->jsonHelper = $jsonHelper;
+                $this->scopeConfig = $scopeConfig;
+                $this->messageManager = $messageManager;
                 return parent::__construct($context);
             }
 
@@ -59,23 +68,51 @@
                 "city" => $city,
                 "region" => $region,
                 "postcode" => $zip,
-                "dob" => $dob,
                 "ssn" => $ssn,
                 "telephone" => $phone,
-                "email" => $email
+                "email" => $email,
+                "ssn" => $ssn
               );
 
-              $isVerified = $this->helper->veratadPost($target, $order_id, $customer_id, $address_type);
-              if($isVerified){
-                $return = array(
-                  "action" => "PASS"
-                );
-              }else{
-                $return = array(
-                  "action" => "FAIL"
-                );
-              }
-              $json_result = $this->resultJsonFactory->create();
-              return $json_result->setData($return);
-            }
+              $isVerified = $this->helper->veratadPost($target, $order_id, $customer_id, $address_type, $dob);
+              $total_attempts = $this->helper->getAmountOfAttempts($order_id);
+              $attempts_allowed = $this->helper->getAttemptsAllowed($order_id);
+
+              $attempts_left = ($total_attempts < $attempts_allowed);
+              $dcams_site = $this->scopeConfig->getValue('settings/dcams/dcams_site_name', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+              $dcams_text = $this->scopeConfig->getValue('settings/content/dcams_intro', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+                if($isVerified){
+                  $return = array(
+                    "action" => "PASS",
+                    "attempts_left" => $attempts_left
+                  );
+                  $text = $this->scopeConfig->getValue('settings/content/agematch_success_subtitle', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                  $this->messageManager->getMessages(true);
+                  $this->messageManager->addSuccess(__($text));
+                }elseif(!$isVerified && $attempts_left){
+                  $return = array(
+                    "action" => "FAIL",
+                    "attempts_left" => $attempts_left
+                  );
+                  $text = $this->scopeConfig->getValue('settings/content/agematch_failure_subtitle', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                  $this->messageManager->getMessages(true);
+                  $this->messageManager->addError(__($text));
+                }elseif(!$isVerified && !$attempts_left){
+                  $return = array(
+                    "action" => "FAIL",
+                    "attempts_left" => $attempts_left
+                  );
+                  $text = $this->scopeConfig->getValue('settings/content/agematch_exceeded_subtitle', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                  $this->messageManager->getMessages(true);
+                  if(!$dcams_site){
+                    $this->messageManager->addError(__($text));
+                  }else{
+                    $this->messageManager->addWarning(__($dcams_text));
+                  }
+                }
+
+            $json_result = $this->resultJsonFactory->create();
+            return $json_result->setData($return);
+        }
       }

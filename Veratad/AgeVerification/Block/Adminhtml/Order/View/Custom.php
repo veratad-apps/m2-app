@@ -69,5 +69,25 @@
             return $action;
           }
 
+          public function getDcamsFront()
+          {
+            $order_id = $this->request->getParam('order_id');
+            $history = $this->_veratadHistory->create();
+            $collection = $history->getCollection()->addFieldToFilter('veratad_order_id', array('eq' => $order_id))->getData();
+            $last = end($collection);
+            $front = $last['veratad_id_front'];
+            return $front;
+          }
+
+          public function getDcamsBack()
+          {
+            $order_id = $this->request->getParam('order_id');
+            $history = $this->_veratadHistory->create();
+            $collection = $history->getCollection()->addFieldToFilter('veratad_order_id', array('eq' => $order_id))->getData();
+            $last = end($collection);
+            $back = $last['veratad_id_back'];
+            return $back;
+          }
+
 
         }

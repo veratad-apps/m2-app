@@ -19,34 +19,30 @@ class Api
         $this->_veratadHistory = $history;
     }
 
-    public function veratadCaller($billing, $shipping, $orderid, $customerid)
+    public function veratadCaller($billing, $shipping, $orderid, $customerid, $dob)
     {
 
       $result = false;
 
       $verification_type = $this->scopeConfig->getValue('settings/general/to_verify', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
-      $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/caller.log');
-      $logger = new \Zend\Log\Logger();
-      $logger->addWriter($writer);
-      $logger->info("verification type = $verification_type");
       if($verification_type === "billing"){
         //billing only post
-        $billing_verified = $this->helper->veratadPost($billing, $orderid, $customerid, "billing");
+        $billing_verified = $this->helper->veratadPost($billing, $orderid, $customerid, "billing", $dob);
         if($billing_verified){
           $result = true;
         }
       }elseif($verification_type === "shipping"){
         //shipping only post
-        $shipping_verified = $this->helper->veratadPost($shipping, $orderid, $customerid, "shipping");
+        $shipping_verified = $this->helper->veratadPost($shipping, $orderid, $customerid, "shipping", $dob);
         if($shipping_verified){
           $result = true;
         }
 
       }elseif($verification_type === "both"){
         //both post
-        $billing_verified = $this->helper->veratadPost($billing, $orderid, $customerid, "billing");
-        $shipping_verified = $this->helper->veratadPost($shipping, $orderid, $customerid, "shipping");
+        $billing_verified = $this->helper->veratadPost($billing, $orderid, $customerid, "billing", $dob);
+        $shipping_verified = $this->helper->veratadPost($shipping, $orderid, $customerid, "shipping", $dob);
 
         if($billing_verified && $shipping_verified){
           $result = true;
@@ -57,13 +53,13 @@ class Api
 
         $nameMatch = $this->helper->nameDetection($billing, $shipping);
         if($nameMatch){
-          $billing_verified = $this->helper->veratadPost($billing, $orderid, $customerid, "billing");
+          $billing_verified = $this->helper->veratadPost($billing, $orderid, $customerid, "billing", $dob);
           if($billing_verified){
             $result = true;
           }
         }else{
-          $billing_verified = $this->helper->veratadPost($billing, $orderid, $customerid, "billing");
-          $shipping_verified = $this->helper->veratadPost($shipping, $orderid, $customerid, "shipping");
+          $billing_verified = $this->helper->veratadPost($billing, $orderid, $customerid, "billing", $dob);
+          $shipping_verified = $this->helper->veratadPost($shipping, $orderid, $customerid, "shipping", $dob);
           if($billing_verified && $shipping_verified){
             $result = true;
           }

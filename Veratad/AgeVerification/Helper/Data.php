@@ -3,6 +3,7 @@
         namespace Veratad\AgeVerification\Helper;
 
         use \Magento\Framework\App\Helper\AbstractHelper;
+        use Magento\Framework\Controller\Result\JsonFactory;
 
         class Data extends AbstractHelper
         {
@@ -20,6 +21,7 @@
           protected $jsonHelper;
           protected $orderRepository;
           protected $_customerRepositoryInterface;
+          protected $date;
 
 
           public function __construct(
@@ -35,7 +37,9 @@
                 \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
                 \Magento\Framework\Json\Helper\Data $jsonHelper,
               \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
-              \Magento\Customer\Api\CustomerRepositoryInterface $_customerRepositoryInterface
+              \Magento\Customer\Api\CustomerRepositoryInterface $_customerRepositoryInterface,
+              JsonFactory $resultJsonFactory,
+              \Magento\Framework\Stdlib\DateTime\TimezoneInterface $date
             )
           {
             $this->scopeConfig = $scopeConfig;
@@ -51,6 +55,8 @@
             $this->jsonHelper = $jsonHelper;
             $this->orderRepository = $orderRepository;
             $this->customerRepository = $_customerRepositoryInterface;
+            $this->resultJsonFactory = $resultJsonFactory;
+            $this->date = $date;
           }
 
 
@@ -111,13 +117,13 @@
 
                 }
 
-               public function veratadPost($target, $orderid, $customerid, $address_type){
+               public function veratadPost($target, $orderid, $customerid, $address_type, $dob){
 
                  $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/veratad.log');
                  $logger = new \Zend\Log\Logger();
                  $logger->addWriter($writer);
 
-                 $logger->info("target =" . json_encode($target));
+                 $dcams_id = $orderid .'veratad_dcams@veratadmagento.com';
 
                  $user = $this->scopeConfig->getValue('settings/agematch/username', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
                  $pass = $this->scopeConfig->getValue('settings/agematch/password', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
@@ -125,7 +131,20 @@
                  $endpoint = $this->scopeConfig->getValue('settings/agematch/url', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
                  $global_age_to_check = $this->scopeConfig->getValue('age/general_age/global_age', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
-                   $fn = $target['firstname'];
+                 if(!$global_age_to_check){
+                   $global_age_to_check = "21+";
+                 }
+
+                 $yob = substr($dob, 0, 4);
+                 $current_year = $this->date->date()->format('Y');
+
+                 if ($yob >= 1900 && $yob < $current_year){
+                   $dob = $dob;
+                 }else{
+                   $dob = "";
+                 }
+
+                  $fn = $target['firstname'];
                    $ln = $target['lastname'];
                    $addr = $target['street'];
                    $addr_clean = str_replace("\n", ' ', $addr);
@@ -135,6 +154,19 @@
                    $phone = $target['telephone'];
                    $email = $target['email'];
 
+                   if (array_key_exists('ssn', $target)) {
+                     $ssn = $target['ssn'];
+                   }else{
+                     $ssn = "";
+                   }
+
+                   $state_to_check = strtolower($state);
+                   $state_age_requirement = $this->scopeConfig->getValue('age/general_age/'.$state_to_check, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                   if($state_age_requirement){
+                     $age = $state_age_requirement;
+                   }else{
+                     $age = $global_age_to_check;
+                   }
 
                    $data = array(
                      "user" => $user,
@@ -149,8 +181,9 @@
                            "city" => $city,
                            "state" => $state,
                            "zip" => $zip,
-                           "age" => $global_age_to_check,
-                           "dob" => "",
+                           "age" => $age,
+                           "dob" => $dob,
+                           "ssn" => $ssn,
                            "phone" => $phone,
                            "email" => $email
                          )
@@ -165,7 +198,8 @@
 
                     $array_result = $this->jsonHelper->jsonDecode($body);
 
-                     $data['pass'] = "xxxxx";
+                     $data['pass'] = "xxxx";
+                     $data['target']['ssn'] = "xxxx";
                      $log_query = json_encode($data);
                      $logger->info('query:' . $log_query);
 
@@ -177,6 +211,15 @@
                      $confirmation = $array_result['meta']['confirmation'];
                      $manual = "FALSE";
 
+                     if($orderid){
+                       $order = $this->orderRepository->get($orderid);
+                       $order->setVeratadAction($action);
+                       $order->save();
+                       $orderid = $orderid;
+                     }else{
+                       $orderid = "NONE";
+                     }
+
                      $this->_veratadHistory->create()->setData(
                        array("veratad_action" => $action,
                        "veratad_detail" => $detail,
@@ -184,22 +227,11 @@
                        "veratad_timestamp" => $timestamp,
                        "veratad_override" => $manual,
                        "veratad_order_id" => $orderid,
+                       "veratad_dcams_id" => $dcams_id,
                        "veratad_customer_id" => $customerid,
                        "veratad_address_type" => $address_type,
                      ))->save();
 
-                     $order = $this->orderRepository->get($orderid);
-                     $order->setVeratadAction($action);
-                     $order->save();
-
-                     /*
-                     if($customerid){
-                       $customer = $this->_customerFactory->create();
-                       $logger->info("customer model =" . json_encode($customer));
-                       $customer->setCustomAttribute('veratad_action', $action);
-                       $customer->save();
-                     }
-                     */
 
                      $final = ($action === "PASS");
 
@@ -249,4 +281,86 @@
                 return $result;
               }
 
-          }
+              public function checkAttempts($order_id)
+              {
+
+                $history = $this->_veratadHistory->create();
+                $collection = $history->getCollection()->addFieldToFilter('veratad_order_id', array('eq' => $order_id))->getData();
+
+                $billing_amount = 0;
+                $shipping_amount = 0;
+                $shipping_action = null;
+                $billing_action = null;
+                foreach ($collection as $record){
+                  $address_type = $record['veratad_address_type'];
+                  if ($address_type === "billing"){
+                    $billing_amount++;
+                    $billing_action = $record['veratad_action'];
+                  }elseif($address_type === "shipping"){
+                    $shipping_amount++;
+                    $shipping_action = $record['veratad_action'];
+                  }
+                }
+
+                $attempts_allowed_config = $this->scopeConfig->getValue('settings/agematch/agematchattempts', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+                if($shipping_amount === 0){
+                  $attempts_allowed = $attempts_allowed_config;
+                }else{
+                  $attempts_allowed = $attempts_allowed_config + 1;
+                }
+
+                $total_attempts = count($collection);
+
+
+                //check if they are eligible for a 2nd try
+
+                if(($billing_action === "FAIL" && $total_attempts < $attempts_allowed && ($shipping_action === "PASS" || $shipping_action === null))){
+                  $eligible = "true";
+                }else{
+                  $eligible = "false";
+                }
+
+                return $eligible;
+            }
+
+
+            public function getAmountOfAttempts($order_id)
+            {
+              $history = $this->_veratadHistory->create();
+              $collection = $history->getCollection()->addFieldToFilter('veratad_order_id', array('eq' => $order_id))->getData();
+              return count($collection);
+            }
+
+            public function getAttemptsAllowed($order_id)
+            {
+              $history = $this->_veratadHistory->create();
+              $collection = $history->getCollection()->addFieldToFilter('veratad_order_id', array('eq' => $order_id))->getData();
+
+              $billing_amount = 0;
+              $shipping_amount = 0;
+              $shipping_action = null;
+              $billing_action = null;
+              foreach ($collection as $record){
+                $address_type = $record['veratad_address_type'];
+                if ($address_type === "billing"){
+                  $billing_amount++;
+                  $billing_action = $record['veratad_action'];
+                }elseif($address_type === "shipping"){
+                  $shipping_amount++;
+                  $shipping_action = $record['veratad_action'];
+                }
+              }
+
+              $attempts_allowed_config = $this->scopeConfig->getValue('settings/agematch/agematchattempts', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+              if($shipping_amount === 0){
+                $attempts_allowed = $attempts_allowed_config;
+              }else{
+                $attempts_allowed = $attempts_allowed_config + 1;
+              }
+
+              return $attempts_allowed;
+            }
+
+        }

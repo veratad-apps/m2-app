@@ -2,52 +2,62 @@
 
     $order_data = $block->getOrderData();
 
+    $dcams_id = $block->getDcamsId();
+
     $fn = $order_data['fn'];
     $ln = $order_data['ln'];
     $addr = $order_data['addr'];
+    $state = $order_data['state'];
     $zip = $order_data['zip'];
     $order_id = $order_data['id'];
     $customer_id = $order_data['customer_id'];
 
+    $age = $block->getAgeState($state);
 
-    $fail_title = $block->getFailTitle();
     $fail_subtitle = $block->getFailSubTitle();
-    $second_attempt_success_title = $block->getSuccessTitle();
-    $second_attempt_success_subtitle = $block->getSuccessSubTitle();
-    $second_attempt_failure_title = $block->getSecondAttemptFailureTitle();
-    $second_attempt_failure_subtitle = $block->getSecondAttemptFailureSubTitle();
-    $not_eligible_title = $block->getNotEligibleTitle();
-    $not_eligible_subtitle = $block->getNotEligibleSubTitle();
-    $attempts_exceeded_title = $block->getAttemptsExcededTitle();
-    $attempts_exceeded_subtitle = $block->getAttemptsExcededSubTitle();
+
+    $dcams_success = $block->getDcamsSuccessMessage();
+    $dcams_failure = $block->getDcamsFailureMessage();
+
+    $dcams_site = $block->getDcamsSiteName();
+    $dcams_rules = $block->getDcamsRules();
+
+    if(!empty($dcams_site)){
+      $dcams_active = "true";
+    }else{
+      $dcams_active = "false";
+    }
+
+    if($block->getDobVisible()){
+      $dob_visible = "block";
+    }else{
+      $dob_visible = "none";
+    }
+
+    if($block->getDobRequired()){
+      $dob_required = "true";
+    }else{
+      $dob_required = "false";
+    }
+
+    if($block->getSsnVisible()){
+      $ssn_visible = "block";
+    }else{
+      $ssn_visible = "none";
+    }
+
+    if($block->getSsnRequired()){
+      $ssn_required = "true";
+    }else{
+      $ssn_required = "false";
+    }
 
 ?>
+<p id="fail_subtitle"><?php echo $block->escapeHtml($fail_subtitle); ?></p>
 
-<div id="text" style="display:none;">
-    <h2 id="fail_title"><?php echo $block->escapeHtml($fail_title); ?></h2>
-    <p id="fail_subtitle"><?php echo $block->escapeHtml($fail_subtitle); ?></p>
-
-    <h2 id="success_title" style="display:none;"><?php echo $block->escapeHtml($second_attempt_success_title); ?></h2>
-    <p id="success_subtitle" style="display:none;"><?php echo $block->escapeHtml($second_attempt_success_subtitle); ?></p>
-
-    <h2 id="second_attempt_failure_title" style="display:none;"><?php echo $block->escapeHtml($second_attempt_failure_title); ?></h2>
-    <p id="second_attempt_failure_subtitle" style="display:none;"><?php echo $block->escapeHtml($second_attempt_failure_subtitle); ?></p>
-    </div>
-    <h2 id="attempts_exceeded_title" style="display:none;"><?php echo $block->escapeHtml($attempts_exceeded_title); ?></h2>
-    <p id="attempts_exceeded_subtitle" style="display:none;"><?php echo $block->escapeHtml($attempts_exceeded_subtitle); ?></p>
-
-    <h2 id="not_eligible_title" style="display:none;"><?php echo $block->escapeHtml($not_eligible_title); ?></h2>
-    <p id="not_eligible_subtitle" style="display:none;"><?php echo $block->escapeHtml($attempts_exceeded_subtitle); ?></p>
-
+<p id="dcams_success" style="display:none;"><?php echo $block->escapeHtml($dcams_success); ?></p>
+<p id="dcams_failure" style="display:none;"><?php echo $block->escapeHtml($dcams_failure); ?></p>
         <form name="veratad-av" method="POST" id="veratad-av" style="display:none;">
-          <div style="margin-top:10px;">
-            <p>Legal First Name</p>
-            <input name="fn" type="text" placeholder="Legal First Name" id="fn" value ="<?php echo $block->escapeHtml($fn); ?>">
-          </div>
-          <div style="margin-top:10px;">
-            <p>Legal Last Name</p>
-            <input  name="ln" type="text" placeholder="Legal Last Name" id="ln" value ="<?php echo $block->escapeHtml($ln); ?>">
-          </div>
           <div style="margin-top:10px;">
             <p>Street Address</p>
             <input name="addr" type="text" placeholder="Street Address" id="addr" value ="<?php echo $block->escapeHtml($addr); ?>">
@@ -56,14 +66,16 @@
             <p>Zip Code</p>
             <input name="zip" type="text" placeholder="Zip Code" id="zip" value ="<?php echo $block->escapeHtml($zip); ?>">
           </div>
-          <div style="margin-top:10px;">
+          <div style="margin-top:10px; display:<?php echo $block->escapeHtml($dob_visible); ?>;" >
             <p>Date of Birth</p>
             <input id="dob" name="dob" placeholder="YYYYMMDD" type="text" value=""/>
           </div>
-          <div style="margin-top:10px;">
+          <div style="margin-top:10px; display:<?php echo $block->escapeHtml($ssn_visible); ?>;">
             <p>Last 4 of SSN</p>
             <input name="ssn" type="text" placeholder="Last 4 SSN" id="ssn" value ="">
           </div>
+          <input type="hidden" name="fn" value="<?php echo $block->escapeHtml($fn); ?>">
+          <input type="hidden" name="ln" value="<?php echo $block->escapeHtml($ln); ?>">
           <input type="hidden" name="order_id" value="<?php echo $block->escapeHtml($order_id); ?>">
           <input type="hidden" name="customer_id" value="<?php echo $block->escapeHtml($customer_id); ?>">
           <input type="hidden" name="dcam_id" value="">
@@ -75,6 +87,7 @@
           <button type="submit" id="veratadSubmit" class="btn btn-primary btn-lg pull-right">Verify</button>
         </div>
         </form>
+          <button type="button" class="dcams" id="dcams_button" class="btn btn-primary btn-lg pull-right" style="display:none; margin-top:20px;">Upload Your ID</button>
 
         <script>
         require(['jquery'],function(){
@@ -93,23 +106,9 @@
                             var action = result.action;
                             if(action === "false"){
                               jQuery('#veratad-av').hide();
-                              jQuery('#fail_title').hide();
                               jQuery('#fail_subtitle').hide();
-                              jQuery('#attempts_exceeded_title').show();
-                              jQuery('#attempts_exceeded_subtitle').show();
                             }else{
                               jQuery('#veratad-av').show();
-                              jQuery('#text').show();
-                            }
-                            var eligible = result.eligible;
-                            if (eligible === "false"){
-                              jQuery('#veratad-av').hide();
-                              jQuery('#fail_title').hide();
-                              jQuery('#fail_subtitle').hide();
-                              jQuery('#attempts_exceeded_title').hide();
-                              jQuery('#attempts_exceeded_subtitle').hide();
-                              jQuery('#not_eligible_title').show();
-                              jQuery('#not_eligible_subtitle').show();
                             }
                           },
                         error: function(xhr, resp, text) {
@@ -125,33 +124,40 @@
           jQuery(document).ready(function(){
 
             function validateForm() {
-              var fn = document.forms["veratad-av"]["fn"].value;
-              var ln = document.forms["veratad-av"]["ln"].value;
+
               var addr = document.forms["veratad-av"]["addr"].value;
               var zip = document.forms["veratad-av"]["zip"].value;
-              if (fn == "") {
-                alert("First name is a required field.");
-                return false;
-              } else if(ln == ""){
-                alert("Last name is a required field.");
-                return false;
-              } else if(addr == ""){
+              var dob = document.forms["veratad-av"]["dob"].value;
+              var ssn = document.forms["veratad-av"]["ssn"].value;
+
+              var ssn_required = <?php echo $block->escapeHtml($ssn_required); ?>;
+              var dob_required = <?php echo $block->escapeHtml($dob_required); ?>;
+
+              if(addr == ""){
                 alert("Address is a required field.");
                 return false;
               }else if(zip == ""){
                 alert("Zip code is a required field.");
+                return false;
+              }else if(ssn == "" && ssn_required === true){
+                alert("Last 4 SSN is a required field.");
+                return false;
+              }else if(dob == "" && dob_required === true){
+                alert("Date of Birth is a required field.");
                 return false;
               }
               return true;
             }
 
 
-
                 // click on button submit
                 jQuery("#veratadSubmit").on('click', function(){
+                  jQuery('#fail_subtitle').hide();
                   var url = BASE_URL + 'ageverification/agematch/query';
 
                   valid = validateForm();
+
+                  var dcams_active = <?php echo $block->escapeHtml($dcams_active); ?>;
 
                   if(valid){
 
@@ -163,19 +169,18 @@
                         showLoader: true,
                         data : jQuery("#veratad-av").serialize(), // post data || get data
                         success : function(veratad) {
+                          console.log(veratad);
                             var action = veratad.action;
-                            if(action === "PASS"){
+                            var eligible = veratad.attempts_left;
+                              if(action === "PASS"){
+                                jQuery('#veratad-av').hide();
+                              }else if (action === "FAIL" && eligible === true){
+                                jQuery('#veratad-av').show();
+                              }else{
                               jQuery('#veratad-av').hide();
-                              jQuery('#fail_title').hide();
-                              jQuery('#fail_subtitle').hide();
-                              jQuery('#success_title').show();
-                              jQuery('#success_subtitle').show();
-                            }else{
-                              jQuery('#veratad-av').hide();
-                              jQuery('#fail_title').hide();
-                              jQuery('#fail_subtitle').hide();
-                              jQuery('#second_attempt_failure_title').show();
-                              jQuery('#second_attempt_failure_subtitle').show();
+                              if(dcams_active === true){
+                                jQuery('.dcams').show();
+                              }
                             }
                           },
                         error: function(xhr, resp, text) {
@@ -192,3 +197,68 @@
             });
         });
         </script>
+<script>
+require(['jquery'],function(){
+  function updateDcamsStatus(){
+          var url = BASE_URL + 'ageverification/dcamsplus/update';
+            // send ajax
+            jQuery.ajax({
+                url: url, // url where to submit the request
+                type : "POST", // type of action POST || GET
+                dataType : 'json', // data type
+                showLoader: true,
+                data : {"email": "<?php echo $block->escapeHtml($dcams_id); ?>", "order": "<?php echo $block->escapeHtml($order_id); ?>", "customer": "<?php echo $block->escapeHtml($customer_id); ?>"}, // post data || get data
+                success : function(result) {
+                  console.log(result);
+                  },
+                error: function(xhr, resp, text) {
+                    console.log(xhr, resp, text);
+                }
+            })
+
+  }
+  jQuery(document).ready(function(){
+  jQuery("#dcams_button").on('click', function(){
+
+          var veratadModal;
+          jQuery(function(){
+            veratadModal = new veratad.modal({
+              site: "<?php echo $block->escapeHtml($dcams_site); ?>", // veratad will provide your site name for identification.
+              review: true, // set to true or false. When true it will trigger a Veratad anual review upon scan failure.
+              rules: "<?php echo $block->escapeHtml($dcams_rules); ?>", //check out api.veratad.com for more rule sets
+              age: "<?php echo $block->escapeHtml($age); ?>", //place the age you want to check here
+              fn: "<?php echo $block->escapeHtml($fn); ?>", //customer first name
+              ln: "<?php echo $block->escapeHtml($ln); ?>", //customer last name
+              addr: jQuery('#addr').val(), //customer address
+              zip: jQuery('#addr').val(), //customer zip code
+              dob: jQuery('#dob').val(), //required - Customer Date of birth. YYYYMMDD format only.
+              email: "<?php echo $block->escapeHtml($dcams_id); ?>", //required - customer email address. This is used for tracking the user.
+              onOpen: function() {
+                console.log('Veratad modal open');
+              },
+              onClose: function() {
+                console.log('Veratad modal closed');
+                veratadModal.close();
+              },
+              onSuccess: function() {
+                //this is just an example. Handle the customer in your own frontend flow.
+                jQuery('#dcams_success').show();
+                jQuery('.dcams').hide();
+                updateDcamsStatus();
+                veratadModal.close();
+              },
+              onFailure: function() {
+                //this is just an example. Handle the customer in your own frontend flow.
+                jQuery('#dcams_failure').show();
+                jQuery('.dcams').hide();
+                updateDcamsStatus();
+                veratadModal.close();
+              },
+            });
+          veratadModal.open();
+          });
+        });
+      });
+});
+    </script>
+  <script src="https://verataddev.com/dcams/stable/initialize.js"></script>

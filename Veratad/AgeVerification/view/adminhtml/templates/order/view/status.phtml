@@ -5,6 +5,9 @@ $username = $block->getCurrentUser();
 $orderId = $block->veratadOrderId();
 $order_action = $block->getVeratadActionOrder();
 
+$front = $block->getDcamsFront();
+$back = $block->getDcamsBack();
+
 
 $status_url =  $block->escapeUrl($block->getBaseUrl().'ageverification/status/update/');
 
@@ -55,10 +58,41 @@ $status_url =  $block->escapeUrl($block->getBaseUrl().'ageverification/status/up
           			</tbody>
           		</table>
           	</div>
+
+
+
+
+            <section class="admin__page-section order-addresses">
+                <div class="admin__page-section-title">
+                    <span class="title">Identity Document</span>
+                </div>
+                <div class="admin__page-section-content">
+                    <div class="admin__page-section-item order-billing-address">
+                                    <div class="admin__page-section-item-title">
+                            <span class="title">Front</span>
+                        </div>
+                        <address class="admin__page-section-item-content">
+                          <img src="https://register.veratad.com/images/ul/<?php echo $block->escapeHtml($front); ?>" height="250" width"250"></img>
+            </address>
+                    </div>
+                                <div class="admin__page-section-item order-shipping-address">
+                                            <div class="admin__page-section-item-title">
+                                <span class="title">Back</span>
+
+                            </div>
+                            <address class="admin__page-section-item-content">
+                              <img src="https://register.veratad.com/images/ul/<?php echo $block->escapeHtml($back); ?>" height="250" width"250"></img>
+
+            </address>
+                        </div>
+                        </div>
+            </section>
             <div class="admin__field">
               <form id="veratad">
               <input type="hidden" name="order_id" value="<?php echo $block->escapeHtml($orderId); ?>">
               <input type="hidden" name="username" value="<?php echo $block->escapeHtml($username); ?>">
+              <input type="hidden" name="front_id" value="<?php echo $block->escapeHtml($front); ?>">
+              <input type="hidden" name="back_id" value="<?php echo $block->escapeHtml($back); ?>">
                 <label for="status" class="admin__field-label">Change Verification Status</label>
                 <div class="admin__field-control" style="margin-top:10px;">
                     <select name="status" id="veratad_status" class="admin__control-select">

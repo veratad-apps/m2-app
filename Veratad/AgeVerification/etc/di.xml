@@ -6,5 +6,11 @@
                       <item name="veratad_action" xsi:type="string">sales_order.veratad_action</item>
                   </argument>
               </arguments>
-          </virtualType>
+            </virtualType>
+        <type name="Magento\Checkout\Model\ShippingInformationManagement">
+                  <plugin name="save_to_quote_table_veratad" type="Veratad\AgeVerification\Plugin\Quote\SaveToQuote" sortOrder="100" />
+              </type>
+              <type name="Magento\Checkout\Block\Checkout\LayoutProcessor">
+                  <plugin name="checkout_custom_shipping_fields_veratad" type="Veratad\AgeVerification\Plugin\Checkout\LayoutProcessorPlugin" sortOrder="100" />
+              </type>
 </config>

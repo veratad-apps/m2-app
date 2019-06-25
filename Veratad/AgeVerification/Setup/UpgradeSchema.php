@@ -68,6 +68,16 @@
                             'comment' =>'Veratad DOB'
                         ]
               );
+                $setup->getConnection()
+                    ->addColumn(
+                        $setup->getTable($quoteTable),
+                        'veratad_dob',
+                        [
+                            'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                            'length' => 255,
+                            'comment' =>'Veratad DOB'
+                        ]
+              );
                   $setup->getConnection()
                       ->addColumn(
                           $setup->getTable($salesTable),
