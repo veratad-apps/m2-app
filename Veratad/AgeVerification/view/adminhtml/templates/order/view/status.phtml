@@ -72,8 +72,12 @@ $status_url =  $block->escapeUrl($block->getBaseUrl().'ageverification/status/up
                             <span class="title">Front</span>
                         </div>
                         <address class="admin__page-section-item-content">
-                          <img src="https://register.veratad.com/images/ul/<?php echo $block->escapeHtml($front); ?>" height="250" width"250"></img>
-            </address>
+                          <?php if($block->getDcamsFront()): ?>
+                          <a href="https://register.veratad.com/images/ul/<?php echo $block->escapeHtml($front); ?>" target="_blank"><img src="https://register.veratad.com/images/ul/<?php echo $block->escapeHtml($front); ?>" height="250" width"250"></img></a>
+                          <?php else: ?>
+                            <p>No Document Collected</p>
+                            <?php endif; ?>
+                        </address>
                     </div>
                                 <div class="admin__page-section-item order-shipping-address">
                                             <div class="admin__page-section-item-title">
@@ -81,8 +85,11 @@ $status_url =  $block->escapeUrl($block->getBaseUrl().'ageverification/status/up
 
                             </div>
                             <address class="admin__page-section-item-content">
-                              <img src="https://register.veratad.com/images/ul/<?php echo $block->escapeHtml($back); ?>" height="250" width"250"></img>
-
+                              <?php if($block->getDcamsBack()): ?>
+                              <a href="https://register.veratad.com/images/ul/<?php echo $block->escapeHtml($back); ?>" target="_blank"><img src="https://register.veratad.com/images/ul/<?php echo $block->escapeHtml($back); ?>" height="250" width"250"></img></a>
+                            <?php else: ?>
+                              <p>No Document Collected</p>
+                              <?php endif; ?>
             </address>
                         </div>
                         </div>

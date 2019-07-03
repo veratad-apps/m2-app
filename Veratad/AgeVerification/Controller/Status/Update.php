@@ -16,6 +16,7 @@
             protected $resultJsonFactory;
             private $scopeConfig;
             protected $_veratadHistory;
+            protected $_veratadAccount;
             protected $_orderFactory;
             protected $date;
             protected $orderRepository;
@@ -29,6 +30,7 @@
                 PageFactory $resultPageFactory,
                 JsonFactory $resultJsonFactory,
                 \Veratad\AgeVerification\Model\HistoryFactory $db,
+                \Veratad\AgeVerification\Model\AccountFactory $account,
                 \Magento\Sales\Model\OrderFactory $orderFactory,
                 \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
                 \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
@@ -41,6 +43,7 @@
                 $this->resultJsonFactory = $resultJsonFactory;
                 $this->scopeConfig = $scopeConfig;
                  $this->_veratadHistory = $db;
+                 $this->_veratadAccount = $account;
                  $this->_orderFactory = $orderFactory;
                  $this->date = $date;
                  $this->orderRepository = $orderRepository;
@@ -71,6 +74,15 @@
                   "veratad_override_user" => $username,
                   "veratad_id_front" => $front,
                   "veratad_id_back" => $back
+                ))->save();
+
+                $this->_veratadAccount->create()->setData(
+                  array("veratad_action" => $action,
+                  "veratad_detail" => "MANUAL OVERRIDE",
+                  "veratad_confirmation" => "NONE",
+                  "veratad_timestamp" => $timestamp,
+                  "veratad_override" => $detail,
+                  "veratad_override_user" => $username
                 ))->save();
 
                 $order = $this->orderRepository->get($orderid);

@@ -131,5 +131,154 @@
     			);
     		}
     		$installer->endSetup();
-    	}
+
+      if (!$installer->tableExists('veratad_dialer')) {
+        $table_dialer = $installer->getConnection()->newTable(
+          $installer->getTable('veratad_dialer')
+        )
+          ->addColumn(
+            'veratad_id',
+            \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+            null,
+            [
+              'identity' => true,
+              'nullable' => false,
+              'primary'  => true,
+              'unsigned' => true,
+            ],
+            'Veratad ID'
+          )
+          ->addColumn(
+            'veratad_action',
+            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            255,
+            ['nullable => false'],
+            'Veratad Action'
+          )
+          ->addColumn(
+            'veratad_detail',
+            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            255,
+            [],
+            'Veratad Detail'
+          )
+          ->addColumn(
+            'veratad_order_id',
+            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            255,
+            [],
+            'Veratad Order ID'
+          )
+          ->addColumn(
+            'veratad_confirmation',
+            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            255,
+            [],
+            'Veratad Confirmation Number'
+          )
+          ->addColumn(
+            'veratad_timestamp',
+            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            255,
+            [],
+            'Veratad Timestamp'
+          )
+          ->setComment('Veratad Dialer Table');
+        $installer->getConnection()->createTable($table_dialer);
+
+        $installer->getConnection()->addIndex(
+          $installer->getTable('veratad_dialer'),
+          $setup->getIdxName(
+            $installer->getTable('veratad_dialer'),
+            ['veratad_order_id'],
+            \Magento\Framework\DB\Adapter\AdapterInterface::INDEX_TYPE_FULLTEXT
+          ),
+          ['veratad_order_id'],
+          \Magento\Framework\DB\Adapter\AdapterInterface::INDEX_TYPE_FULLTEXT
+        );
+      }
+      $installer->endSetup();
+
+      if (!$installer->tableExists('veratad_account')) {
+        $table_account = $installer->getConnection()->newTable(
+          $installer->getTable('veratad_account')
+        )
+        ->addColumn(
+          'veratad_id',
+          \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+          null,
+          [
+            'identity' => true,
+            'nullable' => false,
+            'primary'  => true,
+            'unsigned' => true,
+          ],
+          'Veratad ID'
+        )
+        ->addColumn(
+          'veratad_action',
+          \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+          255,
+          ['nullable => false'],
+          'Veratad Action'
+        )
+        ->addColumn(
+          'veratad_detail',
+          \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+          255,
+          [],
+          'Veratad Detail'
+        )
+        ->addColumn(
+          'veratad_confirmation',
+          \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+          255,
+          [],
+          'Veratad Confirmation Number'
+        )
+        ->addColumn(
+          'veratad_timestamp',
+          \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+          255,
+          [],
+          'Veratad Timestamp'
+        )
+        ->addColumn(
+          'veratad_override',
+          \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+          255,
+          [],
+          'Veratad Manual Override'
+        )
+        ->addColumn(
+          'veratad_override_user',
+          \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+          255,
+          [],
+          'User that manual override'
+        )
+        ->addColumn(
+        'veratad_customer_id',
+        \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+        255,
+        [],
+        'Veratad Customer ID'
+        )
+          ->setComment('Veratad Account Table');
+        $installer->getConnection()->createTable($table_account);
+
+        $installer->getConnection()->addIndex(
+          $installer->getTable('veratad_account'),
+          $setup->getIdxName(
+            $installer->getTable('veratad_account'),
+            ['veratad_customer_id'],
+            \Magento\Framework\DB\Adapter\AdapterInterface::INDEX_TYPE_FULLTEXT
+          ),
+          ['veratad_customer_id'],
+          \Magento\Framework\DB\Adapter\AdapterInterface::INDEX_TYPE_FULLTEXT
+        );
+      }
+      $installer->endSetup();
+
     }
+  }

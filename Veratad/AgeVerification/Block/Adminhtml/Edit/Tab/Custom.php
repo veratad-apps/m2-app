@@ -9,6 +9,7 @@
 
           protected $authSession;
           protected $_veratadHistory;
+          protected $_veratadAccount;
           protected $customerRepository;
 
           public function __construct(
@@ -16,12 +17,14 @@
            \Magento\Framework\Registry $registry,
            \Magento\Backend\Model\Auth\Session $authSession,
            \Veratad\AgeVerification\Model\HistoryFactory $history,
+           \Veratad\AgeVerification\Model\AccountFactory $account,
            \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
            array $data = []
          ) {
            $this->_coreRegistry = $registry;
            $this->authSession = $authSession;
            $this->_veratadHistory = $history;
+           $this->_veratadAccount = $account;
            $this->customerRepository = $customerRepository;
            parent::__construct($context, $data);
          }
@@ -75,8 +78,13 @@
 
         public function getVeratadAccountAction($customerid)
         {
-          $history = $this->_veratadHistory->create();
+          $history = $this->_veratadAccount->create();
           $collection = $history->getCollection()->addFieldToFilter('veratad_customer_id', array('eq' => $customerid))->getData();
+
+          $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/admin.log');
+          $logger = new \Zend\Log\Logger();
+          $logger->addWriter($writer);
+          $logger->info("here is is ". json_encode($collection));
           $last = end($collection);
           $action = $last['veratad_action'];
           return $action;
@@ -84,7 +92,7 @@
 
         public function getVeratadAccountHistoryHelper($customerid)
         {
-          $history = $this->_veratadHistory->create();
+          $history = $this->_veratadAccount->create();
           $collection = $history->getCollection()->addFieldToFilter('veratad_customer_id', array('eq' => $customerid))->getData();
           return $collection;
         }

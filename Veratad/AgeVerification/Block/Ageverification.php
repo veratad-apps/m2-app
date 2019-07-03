@@ -16,6 +16,7 @@
           protected $_order;
           protected $messageManager;
           protected $_veratadHistory;
+          protected $helper;
 
           public function __construct(
             \Magento\Framework\View\Element\Template\Context $context,
@@ -28,6 +29,7 @@
             \Magento\Sales\Model\Order $order,
             \Veratad\AgeVerification\Model\HistoryFactory $history,
             \Magento\Framework\Message\ManagerInterface $messageManager,
+            \Veratad\AgeVerification\Helper\Data $helper,
             array $data = []
             )
           {
@@ -37,6 +39,7 @@
             $this->_storeManager = $storeManager;
             $this->orderRepository = $orderRepository;
             $this->_escaper = $_escaper;
+            $this->helper = $helper;
             $this->_checkoutSession = $checkoutSession;
             $this->_order = $order;
             $this->_veratadHistory = $history;
@@ -93,6 +96,8 @@
               'state' => $order->getBillingAddress()->getData("region"),
               'zip' => $order->getBillingAddress()->getData("postcode"),
               'id' => $id,
+              'email' => $order->getBillingAddress()->getData("email"),
+              'phone' => $order->getBillingAddress()->getData("telephone"),
               'customer_id' => $order->getCustomerId()
             );
 
@@ -150,23 +155,8 @@
             return $dcams_id;
         }
 
-        public function getAgeState($state)
-        {
-          $global_age_to_check = $this->scopeConfig->getValue('age/general_age/global_age', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-
-          if(!$global_age_to_check){
-            $age = "21+";
-          }
-
-          $state_to_check = strtolower($state);
-          $state_age_requirement = $this->scopeConfig->getValue('age/general_age/'.$state_to_check, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-          if($state_age_requirement){
-            $age = $state_age_requirement;
-          }else{
-            $age = $age;
-          }
-
-          return $age;
+        public function getDcamsAge($state, $zip){
+          return $this->helper->ageToCheck($state, $zip);
         }
 
           public function getStoreManagerDataBaseUrl()

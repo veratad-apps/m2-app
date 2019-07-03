@@ -12,6 +12,7 @@
 
             protected $helper;
             protected $_veratadHistory;
+            protected $_veratadAccount;
             protected $orderRepository;
             protected $jsonHelper;
             private $scopeConfig;
@@ -28,6 +29,7 @@
                 JsonFactory $resultJsonFactory,
                 \Veratad\AgeVerification\Helper\Data $helper,
                 \Veratad\AgeVerification\Model\HistoryFactory $history,
+                \Veratad\AgeVerification\Model\AccountFactory $account,
                 \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
                   \Magento\Customer\Api\CustomerRepositoryInterface $customerRepositoryInterface,
                   \Magento\Framework\Json\Helper\Data $jsonHelper,
@@ -44,6 +46,7 @@
                 $this->resultJsonFactory = $resultJsonFactory;
                 $this->helper = $helper;
                 $this->_veratadHistory = $history;
+                $this->_veratadAccount = $account;
                 $this->orderRepository = $orderRepository;
                 $this->jsonHelper = $jsonHelper;
                 $this->scopeConfig = $scopeConfig;
@@ -116,6 +119,19 @@
                 "veratad_id_front" => $front,
                 "veratad_id_back" => $back
               ))->save();
+
+              if($customer_id){
+                $this->_veratadAccount->create()->setData(
+                  array("veratad_action" => $action,
+                  "veratad_detail" => "DCAMS+",
+                  "veratad_confirmation" => "",
+                  "veratad_timestamp" => "",
+                  "veratad_override" => "NONE",
+                  "veratad_override_user" => "NONE",
+                  "veratad_customer_id" => $customer_id,
+                ))->save();
+              }
+
 
               $order = $this->orderRepository->get($order_id);
               $order->setVeratadAction($action);

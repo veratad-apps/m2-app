@@ -16,6 +16,7 @@
             protected $jsonHelper;
             private $scopeConfig;
             protected $messageManager;
+            protected $_customerRepoInterface;
 
 
             public function __construct(
@@ -28,7 +29,8 @@
                   \Magento\Customer\Api\CustomerRepositoryInterface $customerRepositoryInterface,
                   \Magento\Framework\Json\Helper\Data $jsonHelper,
                   \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-                  \Magento\Framework\Message\ManagerInterface $messageManager
+                  \Magento\Framework\Message\ManagerInterface $messageManager,
+                  \Magento\Customer\Api\CustomerRepositoryInterface $customerRepoInterface
                 )
             {
 
@@ -40,6 +42,7 @@
                 $this->jsonHelper = $jsonHelper;
                 $this->scopeConfig = $scopeConfig;
                 $this->messageManager = $messageManager;
+                $this->_customerRepoInterface = $customerRepoInterface;
                 return parent::__construct($context);
             }
 
@@ -74,7 +77,16 @@
                 "ssn" => $ssn
               );
 
-              $isVerified = $this->helper->veratadPost($target, $order_id, $customer_id, $address_type, $dob);
+              $isVerified_check = $this->helper->veratadPost($target, $order_id, $customer_id, $address_type, $dob);
+              $isVerified = false;
+              if($customer_id){
+                $accountNameMatch = $this->helper->nameDetectionAccount($customer_id, $target, $target);
+                if($isVerified_check && $accountNameMatch){
+                  $isVerified = true;
+                }
+              }else{
+                $isVerified = $isVerified_check;
+              }
               $total_attempts = $this->helper->getAmountOfAttempts($order_id);
               $attempts_allowed = $this->helper->getAttemptsAllowed($order_id);
 

@@ -10,7 +10,6 @@
           <general>
             <to_verify>auto_detect</to_verify>
             <enabled>1</enabled>
-            <blockorder>0</blockorder>
           </general>
           <agematch>
             <url>https://production.idresponse.com/process/comprehensive/gateway</url>

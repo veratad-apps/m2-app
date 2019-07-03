@@ -1,16 +1,9 @@
 <?php
 
         $id = $block->getCustomerId();
-
         $action = $block->getVeratadAccountAction($id);
-
-
         $details = $block->getVeratadAccountHistoryHelper($id);
         $username = $block->getCurrentUserVeratad();
-
-        $status_url =  $block->escapeUrl($block->getBaseUrl().'ageverification/customer/update/');
-
-
 ?>
 
     <div class="admin__page-section-title">
@@ -30,7 +23,6 @@
             <th><span>Confirmation</span></th>
             <th><span>Action</span></th>
             <th><span>Detail</span></th>
-            <th><span>Address Type</span></th>
             <th><span>Manual Override</span></th>
             <th><span>User</span></th>
           </tr>
@@ -42,7 +34,6 @@
             <td ><?php echo $block->escapeHtml($detail['veratad_confirmation']) ?></td>
             <td ><?php echo $block->escapeHtml($detail['veratad_action']) ?></td>
             <td><?php echo $block->escapeHtml($detail['veratad_detail']) ?></td>
-            <td><?php echo $block->escapeHtml($detail['veratad_address_type']) ?></td>
             <td ><?php echo $block->escapeHtml($detail['veratad_override']) ?></td>
             <td ><?php echo $block->escapeHtml($detail['veratad_override_user']) ?></td>
           </tr>
@@ -65,34 +56,31 @@
         </div>
     </div>
     </form>
-
     </div>
 
-
     <script>
-
-    require(['jquery'],function(){
-      jQuery(document).ready(function(){
-            // click on button submit
-            jQuery("#changeStatus").on('click', function(){
-              var url = "<?php echo $status_url; ?>";
-              var send = jQuery("#veratad").serialize();
-                // send ajax
-                jQuery.ajax({
-                    url: url, // url where to submit the request
-                    type : "POST", // type of action POST || GET
-                    dataType : 'json', // data type
-                    showLoader: true,
-                    data : send, // post data || get data
-                    success : function() {
-                        location.reload();
-                      },
-                    error: function(xhr, resp, text) {
-                        console.log(xhr, resp, text);
-                    }
-                })
-                return false;
-        });
-        });
+require(['jquery'],function(){
+  jQuery(document).ready(function(){
+        // click on button submit
+        jQuery("#changeStatus").on('click', function(){
+          var url = "<?php echo $block->escapeUrl($block->getBaseUrl().'ageverification/customer/update/'); ?>";
+          var send = jQuery("#veratad").serialize();
+            // send ajax
+            jQuery.ajax({
+                url: url, // url where to submit the request
+                type : "POST", // type of action POST || GET
+                dataType : 'json', // data type
+                showLoader: true,
+                data : send, // post data || get data
+                success : function() {
+                    location.reload();
+                  },
+                error: function(xhr, resp, text) {
+                    console.log(xhr, resp, text);
+                }
+            })
+            return false;
     });
-    </script>
+    });
+});
+</script>
