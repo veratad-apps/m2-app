@@ -4,6 +4,7 @@
               <arguments>
                   <argument name="columns">
                       <item name="veratad_action" xsi:type="string">sales_order.veratad_action</item>
+                      <item name="veratad_dialer" xsi:type="string">sales_order.veratad_dialer</item>
                   </argument>
               </arguments>
             </virtualType>

@@ -126,6 +126,16 @@
                     <comment>Enter the DCAMS+ ruleset here. If empty the default will be used.</comment>
                 </field>
               </group>
+              <group id="dialer" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Dialer</label>
+                <comment>Enter a state and time to send the dialer message.</comment>
+                <field id="dialer_config" translate="label" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Create a Dialer</label>
+                    <comment>Enter the file, time and state on orders. Times should be UTC like "16:00:00".</comment>
+                    <frontend_model>Veratad\AgeVerification\Block\Adminhtml\Menu\Field\Dialer</frontend_model>
+                    <backend_model>Veratad\AgeVerification\Block\Adminhtml\Menu\Config\Backend\AgePerState</backend_model>
+                </field>
+              </group>
             <group id="customer_groups" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Customer Groups</label>
                 <comment>Select groups to exclude from verification.</comment>
@@ -134,321 +144,37 @@
                 </field>
             </group>
         </section>
-        <section id="age" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>Age Limits</label>
-            <tab>veratad</tab>
-            <resource>Veratad_SystemConfigExample::veratad</resource>
-            <group id="general_age" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Age Limits</label>
-                <field id="global_age" type="text" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Global Age Limit</label>
-                    <comment>Add the Global Age Limit here.</comment>
-                    <tooltip>If a State is left blank this is the age limit that will be used. Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-                </field>
-                <field id="alabama" type="text" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Alabama</label>
-                    <comment>Add the age limit here if different from the global.</comment>
-                    <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-                </field>
-                <field id="alaska" type="text" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Alaska</label>
-                    <comment>Add the age limit here if different from the global.</comment>
-                    <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-                </field>
-
-                <field id="arizona" type="text" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Arizona</label>
-                    <comment>Add the age limit here if different from the global.</comment>
-                    <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-                </field>
-
-                <field id="arkansas" type="text" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Arkansas</label>
-                    <comment>Add the age limit here if different from the global.</comment>
-                    <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-                </field>
-
-              <field id="california" type="text" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>California</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
+          <section id="state_ages" translate="label" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+              <class>separator-top sd-general-admin-tab-general</class>
+              <label>Age to Check</label>
+              <tab>veratad</tab>
+              <resource>Veratad_AgeVerification::home_page</resource>
+              <group id="global" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+              <label>Global Age to Check</label>
+              <field id="global_age" type="text" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                  <label>Global Age Limit</label>
+                  <comment>Add the Global Age Limit here.</comment>
+                  <tooltip>If a State or Zip Code exception is not entered this is the age limit that will be used. Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
               </field>
-
-              <field id="colorado" type="text" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Colorado</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="connecticut" type="text" translate="label" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Connecticut</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="delaware" type="text" translate="label" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Delaware</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-              <field id="florida" type="text" translate="label" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Florida</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="georgia" type="text" translate="label" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Georgia</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="hawaii" type="text" translate="label" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Hawaii</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="Idaho" type="text" translate="label" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Idaho</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="illinois" type="text" translate="label" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Illinois</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="indiana" type="text" translate="label" sortOrder="140" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Indiana</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="iowa" type="text" translate="label" sortOrder="150" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Iowa</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="kansas" type="text" translate="label" sortOrder="160" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Kansas</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="kentucky" type="text" translate="label" sortOrder="170" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Kentucky</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="louisiana" type="text" translate="label" sortOrder="180" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Louisiana</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="Maine" type="text" translate="label" sortOrder="190" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Maine</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="Maryland" type="text" translate="label" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Delaware</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="massachusetts" type="text" translate="label" sortOrder="210" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Massachusetts</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="michigan" type="text" translate="label" sortOrder="220" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Michigan</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="minnesota" type="text" translate="label" sortOrder="230" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Minnesota</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="mississippi" type="text" translate="label" sortOrder="240" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Mississippi</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="missouri" type="text" translate="label" sortOrder="250" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Missouri</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="montana" type="text" translate="label" sortOrder="260" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Montana</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="nebraska" type="text" translate="label" sortOrder="270" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Nebraska</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="nevada" type="text" translate="label" sortOrder="280" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Nevada</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="newhampshire" type="text" translate="label" sortOrder="290" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>New Hampshire</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="newjersey" type="text" translate="label" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>New Jersey</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="newmexico" type="text" translate="label" sortOrder="310" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>New Mexico</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="newyork" type="text" translate="label" sortOrder="320" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>New York</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-              <field id="northcarolina" type="text" translate="label" sortOrder="330" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>North Carolina</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="northdakota" type="text" translate="label" sortOrder="340" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>North Dakota</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="ohio" type="text" translate="label" sortOrder="350" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Ohio</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="oklahoma" type="text" translate="label" sortOrder="360" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Oklahoma</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="oregon" type="text" translate="label" sortOrder="370" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Oregon</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="pennsylvania" type="text" translate="label" sortOrder="380" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Pennsylvania</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="rhodeisland" type="text" translate="label" sortOrder="390" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Rhode Island</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="southcarolina" type="text" translate="label" sortOrder="400" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>South Carolina</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="southdakota" type="text" translate="label" sortOrder="410" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>South Dakota</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="tennessee" type="text" translate="label" sortOrder="420" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Tennessee</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="texas" type="text" translate="label" sortOrder="430" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Texas</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="utah" type="text" translate="label" sortOrder="440" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Utah</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="vermont" type="text" translate="label" sortOrder="450" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Vermont</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="virginia" type="text" translate="label" sortOrder="460" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Virginia</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="washington" type="text" translate="label" sortOrder="470" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Washington</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="westvirginia" type="text" translate="label" sortOrder="480" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>West Virginia</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="wisconsin" type="text" translate="label" sortOrder="490" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Wisconsin</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="wyoming" type="text" translate="label" sortOrder="510" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>Wyoming</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
-              <field id="districtofcolumbia" type="text" translate="label" sortOrder="520" showInDefault="1" showInWebsite="1" showInStore="1">
-                  <label>District of Columbia</label>
-                  <comment>Add the age limit here if different from the global.</comment>
-                  <tooltip>Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
-              </field>
-
             </group>
-        </section>
+              <group id="age_state" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                  <label>Age State Exceptions</label>
+                  <field id="age_to_check" translate="label" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                      <label>Create State Age To Check</label>
+                      <comment>Make sure you enter the full state name and age like "21+".</comment>
+                      <frontend_model>Veratad\AgeVerification\Block\Adminhtml\Menu\Field\AgePerState</frontend_model>
+                      <backend_model>Veratad\AgeVerification\Block\Adminhtml\Menu\Config\Backend\AgePerState</backend_model>
+                  </field>
+              </group>
+              <group id="age_zip" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                  <label>Age Zip Code Exceptions</label>
+                  <field id="age_to_check_zip" translate="label" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                      <label>Create Zip Age To Check</label>
+                      <comment>You can enter either one zip code or a range like 10001-10007.</comment>
+                      <frontend_model>Veratad\AgeVerification\Block\Adminhtml\Menu\Field\AgePerZip</frontend_model>
+                      <backend_model>Veratad\AgeVerification\Block\Adminhtml\Menu\Config\Backend\AgePerState</backend_model>
+                  </field>
+              </group>
+          </section>
     </system>
 </config>

@@ -12,9 +12,9 @@
           protected $customerSession;
           protected $authSession;
           protected $request;
-          protected $_objectManager;
           private $httpContext;
           protected $_veratadHistory;
+          protected $_veratadAccount;
           protected $indexerFactory;
           protected $_indexerCollectionFactory;
           protected $curlFactory;
@@ -29,9 +29,10 @@
             \Magento\Customer\Model\Session $customerSession,
               \Magento\Backend\Model\Auth\Session $authSession,
               \Magento\Framework\App\Request\Http $request,
-                \Magento\Framework\ObjectManager\ObjectManager $objectManager,
+
                 \Magento\Framework\App\Http\Context $httpContext,
                 \Veratad\AgeVerification\Model\HistoryFactory $history,
+                \Veratad\AgeVerification\Model\AccountFactory $account,
                 \Magento\Framework\Indexer\IndexerInterfaceFactory $indexerFactory,
                 \Magento\Indexer\Model\Indexer\CollectionFactory $indexerCollectionFactory,
                 \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
@@ -46,9 +47,9 @@
             $this->customerSession = $customerSession;
             $this->authSession = $authSession;
             $this->request = $request;
-            $this->_objectManager = $objectManager;
             $this->httpContext = $httpContext;
             $this->_veratadHistory = $history;
+            $this->_veratadAccount = $account;
             $this->indexerFactory = $indexerFactory;
             $this->_indexerCollectionFactory = $indexerCollectionFactory;
             $this->curlFactory = $curlFactory;
@@ -117,6 +118,75 @@
 
                 }
 
+                public function checkZipException($zip){
+                  $match = null;
+                  $age_to_check = null;
+                  $zip_exceptions = $this->scopeConfig->getValue('state_ages/age_zip/age_to_check_zip', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+                  if($zip_exceptions){
+                    $zips = json_decode($zip_exceptions, true);
+
+                    foreach($zips as $zip_here){
+                      $zip_exception = $zip_here['zip'];
+                      if (strpos($zip_exception, '-') !== false) {
+                        $zip_range = explode('-', $zip_exception);
+                        $low = $zip_range[0];
+                        $high = $zip_range[1];
+                        if($zip >= $low && $zip <= $high ){
+                          $match = true;
+                        }
+                      }
+                      if($zip_exception === $zip || $match){
+                        $age = $zip_here['age'];
+                        $age_to_check = $age;
+                        break;
+                      }
+                    }
+                  }
+
+                  return $age_to_check;
+                }
+
+                public function checkStateException($state)
+                {
+                  $age_to_check = null;
+                  $state_exceptions = $this->scopeConfig->getValue('state_ages/age_state/age_to_check', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+                  if($state_exceptions){
+                    $states = json_decode($state_exceptions, true);
+                    $state_on_target = strtolower($state);
+                    foreach($states as $state_here){
+
+                      $state_exception = strtolower($state_here['state']);
+
+                      if($state_exception === $state_on_target){
+                        $age = $state_here['age'];
+                        $age_to_check = $age;
+                        break;
+                      }
+                    }
+                  }
+
+                  return $age_to_check;
+                }
+
+                public function ageToCheck($state, $zip)
+                {
+                  $global_age = $this->scopeConfig->getValue('state_ages/global/global_age', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                  $zip_exception = $this->checkZipException($zip);
+                  $state_exception = $this->checkStateException($state);
+
+                  if($zip_exception){
+                    $age_to_check = $zip_exception;
+                  }elseif($state_exception){
+                    $age_to_check = $state_exception;
+                  }else{
+                    $age_to_check = $global_age;
+                  }
+
+                  return $age_to_check;
+                }
+
                public function veratadPost($target, $orderid, $customerid, $address_type, $dob){
 
                  $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/veratad.log');
@@ -129,11 +199,6 @@
                  $pass = $this->scopeConfig->getValue('settings/agematch/password', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
                  $rules = $this->scopeConfig->getValue('settings/agematch/agematchrules', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
                  $endpoint = $this->scopeConfig->getValue('settings/agematch/url', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-                 $global_age_to_check = $this->scopeConfig->getValue('age/general_age/global_age', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-
-                 if(!$global_age_to_check){
-                   $global_age_to_check = "21+";
-                 }
 
                  $yob = substr($dob, 0, 4);
                  $current_year = $this->date->date()->format('Y');
@@ -145,14 +210,14 @@
                  }
 
                   $fn = $target['firstname'];
-                   $ln = $target['lastname'];
-                   $addr = $target['street'];
-                   $addr_clean = str_replace("\n", ' ', $addr);
-                   $city = $target['city'];
-                   $state = $target['region'];
-                   $zip = $target['postcode'];
-                   $phone = $target['telephone'];
-                   $email = $target['email'];
+                  $ln = $target['lastname'];
+                  $addr = $target['street'];
+                  $addr_clean = str_replace("\n", ' ', $addr);
+                  $city = $target['city'];
+                  $state = $target['region'];
+                  $zip = $target['postcode'];
+                  $phone = $target['telephone'];
+                  $email = $target['email'];
 
                    if (array_key_exists('ssn', $target)) {
                      $ssn = $target['ssn'];
@@ -160,12 +225,10 @@
                      $ssn = "";
                    }
 
-                   $state_to_check = strtolower($state);
-                   $state_age_requirement = $this->scopeConfig->getValue('age/general_age/'.$state_to_check, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-                   if($state_age_requirement){
-                     $age = $state_age_requirement;
-                   }else{
-                     $age = $global_age_to_check;
+                   $age = $this->ageToCheck($state, $zip);
+
+                   if(!$age){
+                     $age = "21+";
                    }
 
                    $data = array(
@@ -233,6 +296,20 @@
                      ))->save();
 
 
+                     if($customerid){
+                       $this->_veratadAccount->create()->setData(
+                         array("veratad_action" => $action,
+                         "veratad_detail" => $detail,
+                         "veratad_confirmation" => $confirmation,
+                         "veratad_timestamp" => $timestamp,
+                         "veratad_override" => $manual,
+                         "veratad_order_id" => $orderid,
+                         "veratad_customer_id" => $customerid,
+                       ))->save();
+                     }
+
+
+
                      $final = ($action === "PASS");
 
                      return $final;
@@ -251,7 +328,7 @@
 
               public function getVeratadAccountActionById($customerid)
               {
-                  $history = $this->_veratadHistory->create();
+                  $history = $this->_veratadAccount->create();
                   $collection = $history->getCollection()->addFieldToFilter('veratad_customer_id', array('eq' => $customerid))->getData();
                   $last = end($collection);
                   $action = $last['veratad_action'];

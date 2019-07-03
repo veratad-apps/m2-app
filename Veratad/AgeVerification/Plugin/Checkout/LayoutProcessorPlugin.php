@@ -24,15 +24,15 @@ class LayoutProcessorPlugin
       $dob_required = $this->scopeConfig->getValue('settings/agematch/dobrequired', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
       if($dob_visible){
-        $visible = "true";
+        $visible = true;
       }else{
-        $visible = "false";
+        $visible = false;
       }
 
       if($dob_required){
-        $required = "true";
+        $required = true;
       }else{
-        $required = "false";
+        $required = false;
       }
 
         $customAttributeCode = 'veratad_dob';

@@ -29,7 +29,6 @@
               $customer = $this->_customerRepositoryInterface->getById($customer_id);
               $customerGroupID = $customer->getGroupId();
               $groups_excluded = $this->scopeConfig->getValue('settings/customer_groups/customer_groups', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-
               $result = ((strpos($groups_excluded, $customerGroupID) !== false) || ($av === "PASS" && $accountNameMatch === true));
 
         }else{

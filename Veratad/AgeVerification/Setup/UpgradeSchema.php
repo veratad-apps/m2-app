@@ -60,6 +60,16 @@
                 );
                 $setup->getConnection()
                     ->addColumn(
+                        $setup->getTable($orderTable),
+                        'veratad_dialer',
+                        [
+                            'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                            'length' => 255,
+                            'comment' =>'Veratad Dialer'
+                        ]
+              );
+                $setup->getConnection()
+                    ->addColumn(
                         $setup->getTable($quoteAddressTable),
                         'veratad_dob',
                         [
@@ -78,6 +88,7 @@
                             'comment' =>'Veratad DOB'
                         ]
               );
+
                   $setup->getConnection()
                       ->addColumn(
                           $setup->getTable($salesTable),
@@ -88,6 +99,16 @@
                               'comment' =>'Veratad Action'
                           ]
                 );
+                $setup->getConnection()
+                    ->addColumn(
+                        $setup->getTable($salesTable),
+                        'veratad_dialer',
+                        [
+                            'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                            'length' => 255,
+                            'comment' =>'Veratad Dialer'
+                        ]
+              );
                 $setup->getConnection()
                     ->addColumn(
                         $setup->getTable($salesTable),
@@ -118,6 +139,16 @@
                               'comment' =>'Veratad Action'
                           ]
                 );
+                $setup->getConnection()
+                    ->addColumn(
+                        $setup->getTable($gridTable),
+                        'veratad_dialer',
+                        [
+                            'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                            'length' => 255,
+                            'comment' =>'Veratad Dialer'
+                        ]
+              );
                 $setup->endSetup();
             }
         }
