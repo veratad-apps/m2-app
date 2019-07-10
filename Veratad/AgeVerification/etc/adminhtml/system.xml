@@ -21,16 +21,31 @@
                     <source_model>Veratad\AgeVerification\Model\Config\Source\VerificationType</source_model>
                     <comment>Select which address to verify.</comment>
                 </field>
+                <field id="test_mode" type="select" translate="label,comment,tooltip" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                  <label>Test Mode</label>
+                  <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                  <comment>Enable test mode and then enter the test key used.</comment>
+                  <tooltip>Check the Veratad API docs for test cases. https://api.veratad.com</tooltip>
+                </field>
+                <field id="test_key" type="text" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Test Key</label>
+                    <comment>Veratad test key value.</comment>
+                    <depends>
+                      <field id="test_mode">1</field>
+                    </depends>
+                </field>
             </group>
             <group id="agematch" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>AgeMatch</label>
                 <field id="username" type="text" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Username</label>
                     <comment>Veratad API Username.</comment>
+                    <validate>required-entry</validate>
                 </field>
                 <field id="password" type="password" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Password</label>
                     <comment>Veratad API Password.</comment>
+                    <validate>required-entry</validate>
                 </field>
                 <field id="agematchrules" type="text" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Rules</label>
@@ -40,10 +55,12 @@
                 <field id="url" type="text" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Endpoint</label>
                     <comment>Set the AgeMatch endpoint.</comment>
+                    <validate>required-entry</validate>
                 </field>
                 <field id="agematchattempts" type="text" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Total AgeMatch Attempts</label>
                     <comment>Set the amount of AgeMatch attempts allowed per order.</comment>
+                    <validate>required-entry</validate>
                 </field>
                 <field id="dobvisible" type="select" translate="label,comment,tooltip" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Collect DOB at Checkout</label>
@@ -52,6 +69,9 @@
                   </field>
                   <field id="dobrequired" type="select" translate="label,comment,tooltip" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                       <label>Require DOB at Checkout</label>
+                      <depends>
+                        <field id="dobvisible">1</field>
+                      </depends>
                       <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                       <comment>Should Date of Birth be required at checkout form?</comment>
                     </field>
@@ -62,6 +82,9 @@
                       </field>
                       <field id="dobrequired_additional" type="select" translate="label,comment,tooltip" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                           <label>Require DOB at Additional Attempt</label>
+                          <depends>
+                            <field id="dobvisible_additional">1</field>
+                          </depends>
                           <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                           <comment>Should Date of Birth be required at additional attempt?</comment>
                         </field>
@@ -72,6 +95,9 @@
                         </field>
                         <field id="ssnrequired_additional" type="select" translate="label,comment,tooltip" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                           <label>Require Last 4 SSN at Additional Attempt</label>
+                          <depends>
+                            <field id="ssnvisible_additional">1</field>
+                          </depends>
                           <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                           <comment>Should Last 4 SSN be required at additional attempt?</comment>
                     </field>
@@ -131,15 +157,20 @@
                 <comment>Enter a state and time to send the dialer message.</comment>
                 <field id="dialer_config" translate="label" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Create a Dialer</label>
-                    <comment>Enter the file, time and state on orders. Times should be UTC like "16:00:00".</comment>
+                    <comment>Enter the file name, hour to send and state on orders. Hour should be UTC like "16".</comment>
                     <frontend_model>Veratad\AgeVerification\Block\Adminhtml\Menu\Field\Dialer</frontend_model>
                     <backend_model>Veratad\AgeVerification\Block\Adminhtml\Menu\Config\Backend\AgePerState</backend_model>
                 </field>
+                <field id="dialer_excluded" translate="label" type="multiselect" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                  <label>Excluded Phone Types</label>
+                  <source_model>Veratad\AgeVerification\Model\Config\Source\PhoneType</source_model>
+                </field>
               </group>
-            <group id="customer_groups" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="customer_groups_veratad" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Customer Groups</label>
                 <comment>Select groups to exclude from verification.</comment>
-                <field id="customer_groups" translate="customer_groups" type="multiselect" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="customer_group_list_veratad" translate="label" type="multiselect" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                  <label>Groups</label>
                   <source_model>Veratad\AgeVerification\Model\Config\Source\Group\Multiselect</source_model>
                 </field>
             </group>
@@ -154,6 +185,7 @@
               <field id="global_age" type="text" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                   <label>Global Age Limit</label>
                   <comment>Add the Global Age Limit here.</comment>
+                  <validate>required-entry</validate>
                   <tooltip>If a State or Zip Code exception is not entered this is the age limit that will be used. Make sure to use a "+" sign for the age limit. For example "18+".</tooltip>
               </field>
             </group>

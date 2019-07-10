@@ -56,7 +56,10 @@ class LayoutProcessorPlugin
             'validation' => [
                 'required-entry' => $required
             ],
-            'options' => [],
+            'options' =>
+            [
+              'label' => 'Date of Birth'
+            ],
             'placeholder' => 'YYYYMMDD',
             'filterBy' => null,
             'customEntry' => null,

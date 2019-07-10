@@ -163,6 +163,13 @@
             'Veratad Detail'
           )
           ->addColumn(
+            'veratad_token',
+            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            255,
+            [],
+            'Veratad Token'
+          )
+          ->addColumn(
             'veratad_order_id',
             \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
             255,

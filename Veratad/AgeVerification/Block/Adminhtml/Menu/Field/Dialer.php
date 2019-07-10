@@ -34,8 +34,8 @@ class Dialer extends AbstractFieldArray
         $this->addColumn(
             'time',
             [
-                'label' => __('Time'),
-                'size' => '400px',
+                'label' => __('Hour'),
+                'size' => '200px',
                 'class' => 'required-entry'
             ]
         );
