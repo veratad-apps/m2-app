@@ -12,7 +12,6 @@
           protected $_isExcluded;
           private $scopeConfig;
           protected $helper;
-          protected $helperCron;
           protected $_veratadHistory;
           private $responseFactory;
           private $url;
@@ -26,7 +25,6 @@
             \Magento\Customer\Model\Session $customerSession,
             \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
             \Veratad\AgeVerification\Helper\Data $helper,
-            \Veratad\AgeVerification\Helper\Cron $helperCron,
             \Veratad\AgeVerification\Model\HistoryFactory $history,
             \Magento\Framework\App\ResponseFactory $responseFactory,
             \Magento\Framework\UrlInterface $url,
@@ -39,7 +37,6 @@
             $this->customerSession = $customerSession;
             $this->scopeConfig = $scopeConfig;
             $this->helper = $helper;
-            $this->helperCron = $helperCron;
             $this->_veratadHistory = $history;
             $this->responseFactory = $responseFactory;
             $this->url = $url;
@@ -62,13 +59,6 @@
                 $order = $this->orderRepository->get($order_id);
                 $billing = $order->getBillingAddress()->getData();
                 $shipping = $order->getShippingAddress()->getData();
-
-                //check dialer state
-                $billing_state = $order->getBillingAddress()->getData("region");
-                $states_to_call = $this->helperCron->getStatesToCall();
-                foreach($states_to_call as $states){
-                  $state = $states['state'];
-                }
 
                 $quote_id = $order->getQuoteId();
                 $quote = $this->quoteRepository->get($quote_id);
