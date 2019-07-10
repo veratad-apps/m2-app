@@ -128,7 +128,7 @@
             $phone_types = (explode( ',', $excluded_phone_types ));
             $phone_types_send = array_values($phone_types);
 
-            $endpoint = "https://aus-2.idresponse.com/process/comprehensive/gateway";
+            $endpoint = "https://production.idresponse.com/process/comprehensive/gateway";
 
               $data = array(
                 "user" => $user,
@@ -204,7 +204,7 @@
            $logger = new \Zend\Log\Logger();
            $logger->addWriter($writer);
 
-           $endpoint = "https://aus-2.idresponse.com/process/continue";
+           $endpoint = "https://production.idresponse.com/process/continue";
 
              $data = array(
                    "dialer" => array(
