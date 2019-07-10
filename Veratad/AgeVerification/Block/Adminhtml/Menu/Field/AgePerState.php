@@ -31,6 +31,16 @@ class AgePerState extends AbstractFieldArray
             ]
         );
 
+        $this->addColumn(
+            'state_nee',
+            [
+                'label' => __('state_new'),
+                'size' => '200px',
+                'class' => 'required-entry',
+                'renderer' => 'Magento\Customer\Model\ResourceModel\Address\Attribute\Backend\Region'
+            ]
+        );
+
 
         $this->_addAfter = false;
         $this->_addButtonLabel = __('Add State');

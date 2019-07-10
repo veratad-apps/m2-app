@@ -199,7 +199,11 @@
                  $pass = $this->scopeConfig->getValue('settings/agematch/password', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
                  $rules = $this->scopeConfig->getValue('settings/agematch/agematchrules', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
                  $endpoint = $this->scopeConfig->getValue('settings/agematch/url', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-
+                 $test_mode = $this->scopeConfig->getValue('settings/general/test_mode', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                 $test_key = null;
+                 if($test_mode){
+                   $test_key = $this->scopeConfig->getValue('settings/general/test_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                 }
                  $yob = substr($dob, 0, 4);
                  $current_year = $this->date->date()->format('Y');
 
@@ -248,7 +252,8 @@
                            "dob" => $dob,
                            "ssn" => $ssn,
                            "phone" => $phone,
-                           "email" => $email
+                           "email" => $email,
+                           "test_key" => $test_key
                          )
                      );
 
@@ -389,8 +394,7 @@
 
                 $total_attempts = count($collection);
 
-
-                //check if they are eligible for a 2nd try
+              //check if they are eligible for a 2nd try
 
                 if(($billing_action === "FAIL" && $total_attempts < $attempts_allowed && ($shipping_action === "PASS" || $shipping_action === null))){
                   $eligible = "true";

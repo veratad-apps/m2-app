@@ -28,9 +28,8 @@
               $accountNameMatch = $this->helper->nameDetectionAccount($customer_id, $billing, $shipping);
               $customer = $this->_customerRepositoryInterface->getById($customer_id);
               $customerGroupID = $customer->getGroupId();
-              $groups_excluded = $this->scopeConfig->getValue('settings/customer_groups/customer_groups', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+              $groups_excluded = $this->scopeConfig->getValue('settings/customer_groups_veratad/customer_group_list_veratad', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
               $result = ((strpos($groups_excluded, $customerGroupID) !== false) || ($av === "PASS" && $accountNameMatch === true));
-
         }else{
               $result = false;
             }
