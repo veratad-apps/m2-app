@@ -46,6 +46,7 @@
           {
             $result = false;
             $states_to_call = $this->getStatesToCall();
+	if($states_to_call){
             foreach($states_to_call as $states){
               $state = $states['state'];
               $state_to_check = strtolower($state);
@@ -57,6 +58,7 @@
                 exit;
               }
             }
+	}
           }
 
           public function getOrdersForDial($orders)
