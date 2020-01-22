@@ -46,19 +46,20 @@
           {
             $result = false;
             $states_to_call = $this->getStatesToCall();
-	if($states_to_call){
-            foreach($states_to_call as $states){
-              $state = $states['state'];
-              $state_to_check = strtolower($state);
-              $billing_state_to_check = strtolower($billing_state);
-              $shipping_state_to_check = strtolower($shipping_state);
-              if($billing_state_to_check === $state_to_check || $shipping_state_to_check === $state_to_check){
-                $result = true;
-                return $result;
-                exit;
+            if($states_to_call){
+              foreach($states_to_call as $states){
+                $state = $states['state'];
+                $state_to_check = strtolower($state);
+                $billing_state_to_check = strtolower($billing_state);
+                $shipping_state_to_check = strtolower($shipping_state);
+                if($billing_state_to_check === $state_to_check || $shipping_state_to_check === 
+$state_to_check){
+                  $result = true;
+                  return $result;
+                  exit;
+                }
               }
-            }
-	}
+	    }
           }
 
           public function getOrdersForDial($orders)

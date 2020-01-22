@@ -1,0 +1,11 @@
+{
+    "name": "veratad/ageverification",
+    "description": "Veratad AgeVerification",
+    "type": "magento2-module",
+    "version": "3.3.5",
+    "autoload": {
+      "files": [ "registration.php" ],
+      "psr-4": {
+        "Veratad\\AgeVerification\\": ""}
+    }
+}
