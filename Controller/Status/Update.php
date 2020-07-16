@@ -20,6 +20,8 @@
             protected $_orderFactory;
             protected $date;
             protected $orderRepository;
+            protected $helper;
+            protected $salesOrder;
 
             /**
              * @param Context     $context
@@ -35,6 +37,8 @@
                 \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
                 \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
                 \Magento\Sales\Model\ResourceModel\Order $orderResourceModel,
+                \Veratad\AgeVerification\Helper\Data $helper,
+                \Magento\Sales\Model\Order $salesOrder,
                 \Magento\Framework\Stdlib\DateTime\DateTime $date
                 )
             {
@@ -45,7 +49,9 @@
                  $this->_veratadHistory = $db;
                  $this->_veratadAccount = $account;
                  $this->_orderFactory = $orderFactory;
+                 $this->_order = $salesOrder;
                  $this->date = $date;
+                 $this->helper = $helper;
                  $this->orderRepository = $orderRepository;
                 return parent::__construct($context);
             }
@@ -53,6 +59,9 @@
 
             public function execute()
             {
+              $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/veratad_update.log');
+              $logger = new \Zend\Log\Logger();
+              $logger->addWriter($writer);
 
                 //$customerId = $this->getRequest()->getParam('customer_id');
                 $username = $this->getRequest()->getParam('username');
@@ -76,18 +85,24 @@
                   "veratad_id_back" => $back
                 ))->save();
 
+                $orderdetails = $this->_order->load( $orderid );
+                $customer_id = $orderdetails->getCustomerId();
+
                 $this->_veratadAccount->create()->setData(
                   array("veratad_action" => $action,
                   "veratad_detail" => "MANUAL OVERRIDE",
                   "veratad_confirmation" => "NONE",
                   "veratad_timestamp" => $timestamp,
                   "veratad_override" => $detail,
-                  "veratad_override_user" => $username
+                  "veratad_override_user" => $username,
+                  "veratad_customer_id" => $customer_id
                 ))->save();
 
                 $order = $this->orderRepository->get($orderid);
                 $order->setVeratadAction($action);
                 $order->save();
+
+                $this->helper->setVeratadActionOnAccount($action, $customer_id );
 
               }
 

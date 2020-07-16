@@ -22,6 +22,8 @@
           protected $orderRepository;
           protected $_customerRepositoryInterface;
           protected $date;
+          protected $_order;
+          protected $_checkoutSession;
 
 
           public function __construct(
@@ -29,7 +31,6 @@
             \Magento\Customer\Model\Session $customerSession,
               \Magento\Backend\Model\Auth\Session $authSession,
               \Magento\Framework\App\Request\Http $request,
-
                 \Magento\Framework\App\Http\Context $httpContext,
                 \Veratad\AgeVerification\Model\HistoryFactory $history,
                 \Veratad\AgeVerification\Model\AccountFactory $account,
@@ -38,8 +39,10 @@
                 \Magento\Framework\HTTP\Adapter\CurlFactory $curlFactory,
                 \Magento\Framework\Json\Helper\Data $jsonHelper,
               \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
+              \Magento\Sales\Model\Order $order,
               \Magento\Customer\Api\CustomerRepositoryInterface $_customerRepositoryInterface,
               JsonFactory $resultJsonFactory,
+              \Magento\Checkout\Model\Session $checkoutSession,
               \Magento\Framework\Stdlib\DateTime\TimezoneInterface $date
             )
           {
@@ -55,6 +58,8 @@
             $this->curlFactory = $curlFactory;
             $this->jsonHelper = $jsonHelper;
             $this->orderRepository = $orderRepository;
+            $this->_order = $order;
+            $this->_checkoutSession = $checkoutSession;
             $this->customerRepository = $_customerRepositoryInterface;
             $this->resultJsonFactory = $resultJsonFactory;
             $this->date = $date;
@@ -442,6 +447,28 @@
               }
 
               return $attempts_allowed;
+            }
+
+            public function getOrderData()
+            {
+              $order_session = $this->_order->load($this->_checkoutSession->getLastOrderId());
+              $id = $order_session->getId(); //order ID
+              $order = $this->orderRepository->get($id);
+
+              $data = array(
+                'fn' => $order->getBillingAddress()->getFirstname(),
+                'ln' => $order->getBillingAddress()->getLastname(),
+                'addr' => $order->getBillingAddress()->getData("street"),
+                'state' => $order->getBillingAddress()->getData("region"),
+                'zip' => $order->getBillingAddress()->getData("postcode"),
+                'id' => $id,
+                'email' => $order->getBillingAddress()->getData("email"),
+                'phone' => $order->getBillingAddress()->getData("telephone"),
+                'customer_id' => $order->getCustomerId(),
+                'action' => $order->getVeratadAction()
+              );
+
+              return $data;
             }
 
         }

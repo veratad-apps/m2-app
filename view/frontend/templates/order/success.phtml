@@ -1,0 +1,843 @@
+<?php
+
+    $order_data = $block->getOrderData();
+
+    $action = $order_data['action'];
+
+    if($action == "PASS"){
+      $show_age_verification = "none";
+    }else{
+      $show_age_verification = "block";
+    }
+
+    $dcams_id = $block->getDcamsId();
+
+    $fn = $order_data['fn'];
+    $ln = $order_data['ln'];
+    $addr = $order_data['addr'];
+    $state = $order_data['state'];
+    $zip = $order_data['zip'];
+    $order_id = $order_data['id'];
+    $customer_id = $order_data['customer_id'];
+    $email = $order_data['email'];
+    $phone = $order_data['phone'];
+
+    $age = $block->getDcamsAge($state, $zip);
+
+    $fail_subtitle = $block->getFailSubTitle();
+
+    $dcams_success = $block->getDcamsSuccessMessage();
+    $dcams_failure = $block->getDcamsFailureMessage();
+    $dcams_intro = $block->getDcamsIntroMessage();
+    $second_attempt_failure_title = $block->getSecondAttemptFailureSubTitle();
+
+    $dcams_site = $block->getDcamsSiteName();
+    $dcams_rules = $block->getDcamsRules();
+
+    if(!empty($dcams_site)){
+      $dcams_active = "true";
+    }else{
+      $dcams_active = "false";
+    }
+
+    if($block->getDobVisible()){
+      $dob_visible = "block";
+    }else{
+      $dob_visible = "none";
+    }
+
+    if($block->getDobRequired()){
+      $dob_required = "true";
+      $dob_required_indicator = "inline-block";
+    }else{
+      $dob_required = "false";
+      $dob_required_indicator = "none";
+    }
+
+    if($block->getSsnVisible()){
+      $ssn_visible = "block";
+    }else{
+      $ssn_visible = "none";
+    }
+
+    if($block->getSsnRequired()){
+      $ssn_required = "true";
+      $ssn_required_indicator = "inline-block";
+    }else{
+      $ssn_required = "false";
+      $ssn_required_indicator = "none";
+    }
+
+?>
+<div class="veratad-modal-woo" id="veratad_modal_av_form">
+  <div class="veratad-modal-content-woo" style="margin-top:30px; margin-bottom:30px; height:500px;">
+<p id="fail_subtitle" style="font-size:20px;font-weight: 900;"><?php echo $block->escapeHtml($fail_subtitle); ?></p>
+<p id="dcams_success" style="display:none; font-size:20px;font-weight: 900;"><?php echo $block->escapeHtml($dcams_success); ?></p>
+<p id="dcams_failure" style="display:none; font-size:20px;font-weight: 900;"><?php echo $block->escapeHtml($dcams_failure); ?></p>
+<p id="dcams_intro" style="display:none; font-size:20px;font-weight: 900;"><?php echo $block->escapeHtml($dcams_intro); ?></p>
+<p id="second_attempt_failure_title" style="display:none; font-size:20px;font-weight: 900;"><?php echo $block->escapeHtml($second_attempt_failure_title); ?></p>
+        <form name="veratad-av" method="POST" id="veratad-av" style="display:none;">
+          <div style="margin-top:10px;">
+            <p>Street Address<span> *</span></p>
+            <input name="addr" type="text" placeholder="Street Address" id="addr" value ="<?php echo $block->escapeHtml($addr); ?>">
+          </div>
+          <div style="margin-top:10px;">
+            <p>Zip Code<span> *</span></p>
+            <input name="zip" type="text" placeholder="Zip Code" id="zip" value ="<?php echo $block->escapeHtml($zip); ?>">
+          </div>
+          <div style="margin-top:10px; display:<?php echo $block->escapeHtml($dob_visible); ?>;" >
+            <p>Date of Birth <span id="dob_required_indicator" style="display:<?php echo $block->escapeHtml($dob_required_indicator); ?>;"> *</span></p>
+            <input id="dob" name="dob" placeholder="YYYYMMDD" type="text" value=""/>
+          </div>
+          <div style="margin-top:10px; display:<?php echo $block->escapeHtml($ssn_visible); ?>;">
+            <p>Last 4 of SSN <span id="ssn_required_indicator" style="display:<?php echo $block->escapeHtml($ssn_required_indicator); ?>;"> *</span></p>
+            <input name="ssn" type="text" placeholder="Last 4 SSN" id="ssn" value ="">
+          </div>
+          <input type="hidden" name="fn" value="<?php echo $block->escapeHtml($fn); ?>">
+          <input type="hidden" name="ln" value="<?php echo $block->escapeHtml($ln); ?>">
+          <input type="hidden" name="region" value="<?php echo $block->escapeHtml($state); ?>">
+          <input type="hidden" name="order_id" value="<?php echo $block->escapeHtml($order_id); ?>">
+          <input type="hidden" name="customer_id" value="<?php echo $block->escapeHtml($customer_id); ?>">
+          <input type="hidden" name="email" value="<?php echo $block->escapeHtml($email); ?>">
+          <input type="hidden" name="phone" value="<?php echo $block->escapeHtml($phone); ?>">
+          <input type="hidden" name="dcam_id" value="">
+          <input type="hidden" name="shipping_diff" value="">
+          <input type="hidden" name="shipping_action" value="">
+          <input type="hidden" name="shipping_detail" value="">
+          <input type="hidden" name="shipping_confirmation" value="">
+        <div style="margin-top:10px;">
+          <p id="veratad_req" style="display:none;">You are missing a required field.</p>
+          <button type="submit" id="veratadSubmit" class="btn btn-primary btn-lg pull-right">Verify</button>
+        </div>
+        </form>
+          <button type="button" class="dcams" id="dcams_button" class="btn btn-primary btn-lg pull-right" style="display:none; margin-top:20px;">Upload Your ID</button>
+        </div>
+      </div>
+        <script>
+        require(['jquery'],function(){
+          jQuery(document).ready(function(){
+
+
+        var modal = document.getElementById("veratad_modal_av_form");
+        if(modal){
+          modal.style.display = "<?php echo $block->escapeHtml($show_age_verification ); ?>";
+        }
+
+                  var url = BASE_URL + 'ageverification/attempts/checkattempts';
+                  var send = jQuery("#veratad-av").serialize();
+                    // send ajax
+                    jQuery.ajax({
+                        url: url, // url where to submit the request
+                        type : "POST", // type of action POST || GET
+                        dataType : 'json', // data type
+                        showLoader: true,
+                        data : send, // post data || get data
+                        success : function(result) {
+                          console.log(result);
+                            var action = result.action;
+                            if(action === "false"){
+                              jQuery('#veratad-av').hide();
+                              jQuery('#fail_subtitle').hide();
+                              jQuery('#veratad_modal_av_form').hide();
+                            }else{
+                              jQuery('#veratad-av').show();
+                            }
+                          },
+                        error: function(xhr, resp, text) {
+                            console.log(xhr, resp, text);
+                        }
+                    })
+                    return false;
+            });
+        });
+        </script>
+        <script>
+        require(['jquery'],function(){
+          jQuery(document).ready(function(){
+
+            function validateForm() {
+
+              var addr = document.forms["veratad-av"]["addr"].value;
+              var zip = document.forms["veratad-av"]["zip"].value;
+              var dob = document.forms["veratad-av"]["dob"].value;
+              var ssn = document.forms["veratad-av"]["ssn"].value;
+
+              var ssn_required = <?php echo $block->escapeHtml($ssn_required); ?>;
+              var dob_required = <?php echo $block->escapeHtml($dob_required); ?>;
+
+              if(addr == ""){
+                al
+                jQuery("#veratad_req").show();
+                return false;
+              }else if(zip == ""){
+                jQuery("#veratad_req").show();
+                return false;
+              }else if(ssn == "" && ssn_required === true){
+                jQuery("#veratad_req").show();
+                return false;
+              }else if(dob == "" && dob_required === true){
+                jQuery("#veratad_req").show();
+                return false;
+              }
+              jQuery("#veratad_req").hide();
+              return true;
+            }
+
+
+                // click on button submit
+                jQuery("#veratadSubmit").on('click', function(){
+                  jQuery('#fail_subtitle').hide();
+                  var url = BASE_URL + 'ageverification/agematch/query';
+
+
+                  valid = validateForm();
+
+                  var dcams_active = <?php echo $block->escapeHtml($dcams_active); ?>;
+
+                  if(valid){
+
+                    var modal = document.getElementById("veratad_modal_av_form");
+
+                    modal.style.display = "none";
+
+                    // send ajax
+                    jQuery.ajax({
+                        url: url,
+                        type : "POST",
+                        dataType : 'json',
+                        showLoader: true,
+                        data : jQuery("#veratad-av").serialize(), // post data || get data
+                        success : function(veratad) {
+
+                          console.log(veratad);
+                            var action = veratad.action;
+                            var eligible = veratad.attempts_left;
+                              if(action === "PASS"){
+                                jQuery('#veratad-av').hide();
+                              }else if (action === "FAIL" && eligible === true){
+                                jQuery('#veratad-av').show();
+                                jQuery('#second_attempt_failure_title').show();
+                                modal.style.display = "block";
+                              }else{
+                              jQuery('#veratad-av').hide();
+                              if(dcams_active === true){
+                                jQuery('.dcams').show();
+                                jQuery('#dcams_intro').show();
+                                jQuery('#second_attempt_failure_title').hide();
+                                modal.style.display = "block";
+                              }
+                            }
+                          },
+                        error: function(xhr, resp, text) {
+                            console.log(xhr, resp, text);
+                        }
+                    })
+                  }else{
+                    return false;
+                  }
+                    return false;
+
+            });
+
+            });
+        });
+        </script>
+<script>
+require(['jquery'], function($) {
+
+
+
+
+  function updateDcamsStatus(){
+          var url = BASE_URL + 'ageverification/dcamsplus/update';
+            // send ajax
+            $.ajax({
+                url: url, // url where to submit the request
+                type : "POST", // type of action POST || GET
+                dataType : 'json', // data type
+                showLoader: true,
+                data : {"email": "<?php echo $block->escapeHtml($dcams_id); ?>", "order": "<?php echo $block->escapeHtml($order_id); ?>", "customer": "<?php echo $block->escapeHtml($customer_id); ?>"}, // post data || get data
+                success : function(result) {
+                  console.log(result);
+                },
+                error: function(xhr, resp, text) {
+                    console.log(xhr, resp, text);
+                }
+            })
+
+  }
+
+  $("#dcams_button").on('click', function(){
+
+    var modal = document.getElementById("veratad_modal_av_form");
+
+      modal.style.display = "none";
+
+
+          var veratadModal;
+          $(function(){
+            veratadModal = new veratad.modal({
+              site: "<?php echo $block->escapeHtml($dcams_site); ?>", // veratad will provide your site name for identification.
+              review: true, // set to true or false. When true it will trigger a Veratad anual review upon scan failure.
+              rules: "<?php echo $block->escapeHtml($dcams_rules); ?>", //check out api.veratad.com for more rule sets
+              age: "<?php echo $block->escapeHtml($age); ?>", //place the age you want to check here
+              fn: "<?php echo $block->escapeHtml($fn); ?>", //customer first name
+              ln: "<?php echo $block->escapeHtml($ln); ?>", //customer last name
+              addr: $('#addr').val(), //customer address
+              zip: $('#addr').val(), //customer zip code
+              dob: $('#dob').val(), //required - Customer Date of birth. YYYYMMDD format only.
+              email: "<?php echo $block->escapeHtml($dcams_id); ?>", //required - customer email address. This is used for tracking the user.
+              onOpen: function() {
+                console.log('Veratad modal open');
+              },
+              onClose: function() {
+                console.log('Veratad modal closed');
+                veratadModal.close();
+              },
+              onSuccess: function() {
+                //this is just an example. Handle the customer in your own frontend flow.
+                $('#dcams_success').show();
+                $('.dcams').hide();
+                updateDcamsStatus();
+                veratadModal.close();
+              },
+              onFailure: function() {
+                //this is just an example. Handle the customer in your own frontend flow.
+                $('#dcams_failure').show();
+                $('.dcams').hide();
+                updateDcamsStatus();
+                veratadModal.close();
+              },
+            });
+          veratadModal.open();
+          });
+        });
+
+        var review;
+        var fn;
+        var ln;
+        var addr;
+        var zip;
+        var dob;
+        var email;
+        var values;
+        var customer_service_number;
+        var buildForm;
+        var rules;
+        var message;
+        var onSuccess;
+        var onFailure;
+        var onSuccessClick;
+        var onFailureClick;
+        var site;
+        var age;
+        var region;
+        var BASE_URLMagento = "https://verataddev.com";
+
+        (function(root, factory) {
+            if (typeof definev === 'function' && definev.amd) {
+                definev(factory);
+            } else if (typeof exports === 'object') {
+                module.exports = factory();
+            } else {
+                root.veratad = factory();
+            }
+        }(this, function() {
+
+            /* ----------------------------------------------------------- */
+            /* == modal */
+            /* ----------------------------------------------------------- */
+
+            var transitionEvent = whichTransitionEvent();
+
+
+            function Modal(options) {
+
+                var defaults = {
+                    review: true,
+                    fn: null,
+                    ln: null,
+                    onClose: null,
+                    onOpen: null,
+                    onSuccess: null,
+                    onFailure: null,
+                    onSuccessClick: null,
+                    onFailureClick: null,
+                    beforeOpen: null,
+                    beforeClose: null,
+                    site: null,
+                    age: null,
+                    stickyFooter: false,
+                    footer: false,
+                    cssClass: ['custom-class-1', 'custom-class-2'],
+                    closeLabel: 'Close',
+                    closeMethods: []
+                };
+
+
+                // extends config
+                this.opts = extend({}, defaults, options);
+
+
+
+                // init modal
+                this.init();
+            }
+
+            Modal.prototype.init = function() {
+                if (this.modal) {
+                    return;
+                }
+
+                _build.call(this);
+                _bindEvents.call(this);
+
+
+                // insert modal in dom
+                document.body.insertBefore(this.modal, document.body.firstChild);
+
+                if (this.opts.footer) {
+                    this.addFooter();
+                }
+            };
+
+            Modal.prototype.destroy = function() {
+                if (this.modal === null) {
+                    return;
+                }
+
+                // unbind all events
+                _unbindEvents.call(this);
+
+                // remove modal from dom
+                this.modal.parentNode.removeChild(this.modal);
+
+                this.modal = null;
+            };
+
+
+            Modal.prototype.open = function() {
+
+                var self = this;
+
+                // before open callback
+                if (typeof self.opts.beforeOpen === 'function') {
+                    self.opts.beforeOpen();
+                }
+
+                if (this.modal.style.removeProperty) {
+                    this.modal.style.removeProperty('display');
+                } else {
+                    this.modal.style.removeAttribute('display');
+                }
+
+                // prevent double scroll
+                this._scrollPosition = window.pageYOffset;
+                document.body.classList.add('veratad-enabled');
+                document.body.style.top = -this._scrollPosition + 'px';
+
+                // sticky footer
+                this.setStickyFooter(this.opts.stickyFooter);
+
+                // show modal
+                this.modal.classList.add('veratad-modal--visible');
+
+
+                if (transitionEvent) {
+                    this.modal.addEventListener(transitionEvent, function handler() {
+                        if (typeof self.opts.onOpen === 'function') {
+                            self.opts.onOpen.call(self);
+                        }
+
+                        // detach event after transition end (so it doesn't fire multiple onOpen)
+                        self.modal.removeEventListener(transitionEvent, handler, false);
+
+                    }, false);
+                } else {
+                    if (typeof self.opts.onOpen === 'function') {
+                        self.opts.onOpen.call(self);
+                    }
+                }
+
+                // check if modal is bigger than screen height
+                this.checkOverflow();
+
+            };
+
+            Modal.prototype.isOpen = function() {
+                return !!this.modal.classList.contains("veratad-modal--visible");
+
+            };
+
+            Modal.prototype.close = function() {
+
+                //  before close
+                if (typeof this.opts.beforeClose === "function") {
+                    var close = this.opts.beforeClose.call(this);
+                    if (!close) return;
+                }
+
+                document.body.classList.remove('veratad-enabled');
+                window.scrollTo(0, this._scrollPosition);
+                document.body.style.top = null;
+
+                this.modal.classList.remove('veratad-modal--visible');
+
+                //Using similar setup as onOpen
+                //Reference to the Modal that's created
+                var self = this;
+
+                if (transitionEvent) {
+                    //Track when transition is happening then run onClose on complete
+                    this.modal.addEventListener(transitionEvent, function handler() {
+                        // detach event after transition end (so it doesn't fire multiple onClose)
+                        self.modal.removeEventListener(transitionEvent, handler, false);
+
+                        self.modal.style.display = 'none';
+
+                        // on close callback
+                        if (typeof self.opts.onClose === "function") {
+                            self.opts.onClose.call(this);
+                        }
+
+                    }, false);
+                } else {
+                    self.modal.style.display = 'none';
+                    // on close callback
+                    if (typeof self.opts.onClose === "function") {
+                        self.opts.onClose.call(this);
+                    }
+                }
+            };
+
+            Modal.prototype.setContent = function() {
+
+                // check type of content : String or Node
+                if (typeof content === 'string') {
+                    this.modalBoxContent.innerHTML = '<iframe id="veratad-frame" src="' + BASE_URLMagento +'"/dcams/stable/dcams.html"></iframe>';
+                } else {
+                    this.modalBoxContent.innerHTML = '<iframe id="veratad-frame" src="' + BASE_URLMagento +'"/dcams/stable/dcams.html"></iframe>';
+                    this.modalBoxContent.appendChild(content);
+                }
+
+                if (this.isOpen()) {
+                    // check if modal is bigger than screen height
+                    this.checkOverflow();
+                }
+            };
+
+            Modal.prototype.getContent = function() {
+                return this.modalBoxContent;
+            };
+
+            Modal.prototype.addFooter = function() {
+                // add footer to modal
+                _buildFooter.call(this);
+            };
+
+            Modal.prototype.setFooterContent = function(content) {
+                // set footer content
+                this.modalBoxFooter.innerHTML = content;
+            };
+
+            Modal.prototype.getFooterContent = function() {
+                return this.modalBoxFooter;
+            };
+
+            Modal.prototype.setStickyFooter = function(isSticky) {
+                // if the modal is smaller than the viewport height, we don't need sticky
+                if (!this.isOverflow()) {
+                    isSticky = false;
+                }
+
+                if (isSticky) {
+                    if (this.modalBox.contains(this.modalBoxFooter)) {
+                        this.modalBox.removeChild(this.modalBoxFooter);
+                        this.modal.appendChild(this.modalBoxFooter);
+                        this.modalBoxFooter.classList.add('veratad-modal-box__footer--sticky');
+                        _recalculateFooterPosition.call(this);
+                        this.modalBoxContent.style['padding-bottom'] = this.modalBoxFooter.clientHeight + 20 + 'px';
+                    }
+                } else if (this.modalBoxFooter) {
+                    if (!this.modalBox.contains(this.modalBoxFooter)) {
+                        this.modal.removeChild(this.modalBoxFooter);
+                        this.modalBox.appendChild(this.modalBoxFooter);
+                        this.modalBoxFooter.style.width = 'auto';
+                        this.modalBoxFooter.style.left = '';
+                        this.modalBoxContent.style['padding-bottom'] = '';
+                        this.modalBoxFooter.classList.remove('veratad-modal-box__footer--sticky');
+                    }
+                }
+            };
+
+
+            Modal.prototype.addFooterBtn = function(label, cssClass, callback) {
+                var btn = document.createElement("button");
+
+                // set label
+                btn.innerHTML = label;
+
+                // bind callback
+                btn.addEventListener('click', callback);
+
+                if (typeof cssClass === 'string' && cssClass.length) {
+                    // add classes to btn
+                    cssClass.split(" ").forEach(function(item) {
+                        btn.classList.add(item);
+                    });
+                }
+
+                this.modalBoxFooter.appendChild(btn);
+
+                return btn;
+            };
+
+            Modal.prototype.resize = function() {
+                console.warn('Resize is deprecated and will be removed in version 1.0');
+            };
+
+
+            Modal.prototype.isOverflow = function() {
+                var viewportHeight = window.innerHeight;
+                var modalHeight = this.modalBox.clientHeight;
+
+                return modalHeight >= viewportHeight;
+            };
+
+            Modal.prototype.checkOverflow = function() {
+                // only if the modal is currently shown
+                if (this.modal.classList.contains('veratad-modal--visible')) {
+                    if (this.isOverflow()) {
+                        this.modal.classList.add('veratad-modal--overflow');
+                    } else {
+                        this.modal.classList.remove('veratad-modal--overflow');
+                    }
+
+                    // TODO: remove offset
+                    //_offset.call(this);
+                    if (!this.isOverflow() && this.opts.stickyFooter) {
+                        this.setStickyFooter(false);
+                    } else if (this.isOverflow() && this.opts.stickyFooter) {
+                        _recalculateFooterPosition.call(this);
+                        this.setStickyFooter(true);
+                    }
+                }
+            }
+
+
+            /* ----------------------------------------------------------- */
+            /* == private methods */
+            /* ----------------------------------------------------------- */
+
+            function _recalculateFooterPosition() {
+                if (!this.modalBoxFooter) {
+                    return;
+                }
+                this.modalBoxFooter.style.width = this.modalBox.clientWidth + 'px';
+                this.modalBoxFooter.style.left = this.modalBox.offsetLeft + 'px';
+            }
+
+            function _build() {
+
+                      review = this.opts.review;
+                      region = this.opts.region;
+                      site = this.opts.site;
+                      age = this.opts.age;
+                      fn = this.opts.fn;
+                      ln = this.opts.ln;
+                      addr = this.opts.addr;
+                      zip = this.opts.zip;
+                      dob = this.opts.dob;
+                      email = this.opts.email;
+                      customer_service_number = this.opts.customer_service_number;
+                      rules = this.opts.rules;
+
+                      var frame_url_raw = BASE_URLMagento + "/dcams/stable/dcams.html?review=" + review + "&fn=" + fn + "&ln=" + ln + "&addr=" + addr + "&zip=" + zip + "&dob=" + dob + "&csr=" + customer_service_number + "&email=" + email + "&rules=" + rules + "&site=" + site + "&age=" + age + "&region=" + region;
+
+                      console.log(frame_url_raw);
+                      var frame_url = encodeURI(frame_url_raw);
+                      window.addEventListener("message", receiveMessage, false);
+                      var self = this;
+                      function receiveMessage(event)
+                      {
+                         message = event.data;
+                         if (message === "PASS"){
+                           self.opts.onSuccess();
+                         }else if (message === "CLOSE"){
+                           self.opts.onClose();
+                         }else{
+                           self.opts.onFailure();
+                         }
+                      }
+
+
+                // wrapper
+                this.modal = document.createElement('div');
+                this.modal.classList.add('veratad-modal');
+
+                // remove cusor if no overlay close method
+                if (this.opts.closeMethods.length === 0 || this.opts.closeMethods.indexOf('overlay') === -1) {
+                    this.modal.classList.add('veratad-modal--noOverlayClose');
+                }
+
+                this.modal.style.display = 'none';
+
+                // custom class
+                this.opts.cssClass.forEach(function(item) {
+                    if (typeof item === 'string') {
+                        this.modal.classList.add(item);
+                    }
+                }, this);
+
+                // close btn
+                if (this.opts.closeMethods.indexOf('button') !== -1) {
+                    this.modalCloseBtn = document.createElement('button');
+                    this.modalCloseBtn.classList.add('veratad-modal__close');
+
+                    this.modalCloseBtnIcon = document.createElement('span');
+                    this.modalCloseBtnIcon.classList.add('veratad-modal__closeIcon');
+                    this.modalCloseBtnIcon.innerHTML = 'Ã—';
+
+                    this.modalCloseBtnLabel = document.createElement('span');
+                    this.modalCloseBtnLabel.classList.add('veratad-modal__closeLabel');
+                    this.modalCloseBtnLabel.innerHTML = this.opts.closeLabel;
+
+                    this.modalCloseBtn.appendChild(this.modalCloseBtnIcon);
+                    this.modalCloseBtn.appendChild(this.modalCloseBtnLabel);
+                }
+
+                // modal
+                this.modalBox = document.createElement('div');
+                this.modalBox.classList.add('veratad-modal-box');
+
+                // modal box content
+                this.modalBoxContent = document.createElement('div');
+                this.modalBoxContent.classList.add('veratad-modal-box__content');
+
+                var z = document.createElement('iframe'); // is a node
+                z.src = frame_url;
+                z.id = 'veratad-frame';
+                this.modalBox.appendChild(z);
+
+
+                if (this.opts.closeMethods.indexOf('button') !== -1) {
+                    this.modal.appendChild(this.modalCloseBtn);
+                }
+
+                this.modal.appendChild(this.modalBox);
+
+            }
+
+            function _buildFooter() {
+                this.modalBoxFooter = document.createElement('div');
+                this.modalBoxFooter.classList.add('veratad-modal-box__footer');
+                this.modalBox.appendChild(this.modalBoxFooter);
+            }
+
+
+
+            function _bindEvents() {
+
+                this._events = {
+                    clickCloseBtn: this.close.bind(this),
+                    clickOverlay: _handleClickOutside.bind(this),
+                    resize: this.checkOverflow.bind(this),
+                    keyboardNav: _handleKeyboardNav.bind(this)
+                };
+
+                if (this.opts.closeMethods.indexOf('button') !== -1) {
+                    this.modalCloseBtn.addEventListener('click', this._events.clickCloseBtn);
+                }
+
+                this.modal.addEventListener('mousedown', this._events.clickOverlay);
+                window.addEventListener('resize', this._events.resize);
+                document.addEventListener("keydown", this._events.keyboardNav);
+
+            }
+
+            function _handleKeyboardNav(event) {
+                // escape key
+                if (this.opts.closeMethods.indexOf('escape') !== -1 && event.which === 27 && this.isOpen()) {
+                    this.close();
+                }
+            }
+
+            function _handleClickOutside(event) {
+                // if click is outside the modal
+                if (this.opts.closeMethods.indexOf('overlay') !== -1 && !_findAncestor(event.target, 'veratad-modal') &&
+                event.clientX < this.modal.clientWidth) {
+                    this.close();
+                }
+            }
+
+            function _findAncestor(el, cls) {
+                while ((el = el.parentElement) && !el.classList.contains(cls));
+                return el;
+            }
+
+            function _unbindEvents() {
+                if (this.opts.closeMethods.indexOf('button') !== -1) {
+                    this.modalCloseBtn.removeEventListener('click', this._events.clickCloseBtn);
+                }
+                this.modal.removeEventListener('mousedown', this._events.clickOverlay);
+                window.removeEventListener('resize', this._events.resize);
+                document.removeEventListener("keydown", this._events.keyboardNav);
+            }
+
+            /* ----------------------------------------------------------- */
+            /* == confirm */
+            /* ----------------------------------------------------------- */
+
+            // coming soon
+
+            /* ----------------------------------------------------------- */
+            /* == alert */
+            /* ----------------------------------------------------------- */
+
+            // coming soon
+
+            /* ----------------------------------------------------------- */
+            /* == helpers */
+            /* ----------------------------------------------------------- */
+
+            function extend() {
+                for (var i = 1; i < arguments.length; i++) {
+                    for (var key in arguments[i]) {
+                        if (arguments[i].hasOwnProperty(key)) {
+                            arguments[0][key] = arguments[i][key];
+                        }
+                    }
+                }
+                return arguments[0];
+            }
+
+            function whichTransitionEvent() {
+                var t;
+                var el = document.createElement('veratad-test-transition');
+                var transitions = {
+                    'transition': 'transitionend',
+                    'OTransition': 'oTransitionEnd',
+                    'MozTransition': 'transitionend',
+                    'WebkitTransition': 'webkitTransitionEnd'
+                };
+
+                for (t in transitions) {
+                    if (el.style[t] !== undefined) {
+                        return transitions[t];
+                    }
+                }
+            }
+
+
+
+            /* ----------------------------------------------------------- */
+            /* == return */
+            /* ----------------------------------------------------------- */
+
+            return {
+                modal: Modal
+            };
+
+        }));
+});
+    </script>

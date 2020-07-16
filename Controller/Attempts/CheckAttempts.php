@@ -46,14 +46,27 @@
                 "action" => $eligible
               );
 
-              if($eligible === "false"){
-                $text = $this->scopeConfig->getValue('settings/content/agematch_exceeded_subtitle', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-                $this->messageManager->getMessages(true);
-                $this->messageManager->addError(__($text));
-              }
-
               $json_result = $this->resultJsonFactory->create();
               return $json_result->setData($return);
+
+              if($eligible === "false"){
+                //$text = $this->scopeConfig->getValue('settings/content/agematch_exceeded_subtitle', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                //$this->messageManager->getMessages(true);
+                //$this->messageManager->addError(__($text));
+                /*
+                $order = $this->helper->getOrderData();
+                $action = $order['action'];
+                if($action != "PASS"){
+                  $failtext = $this->scopeConfig->getValue('settings/content/agematch_failure_subtitle', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                  return $this->messageManager->addError(__($failtext));
+                }else{
+                  $text = $this->scopeConfig->getValue('settings/content/agematch_success_subtitle', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                  return $this->messageManager->addSuccess(__($text));
+                }
+                */
+
+              }
+
             }
 
           }

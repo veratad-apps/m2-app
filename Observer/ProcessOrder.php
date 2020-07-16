@@ -15,10 +15,12 @@
           protected $helperCron;
           protected $_veratadHistory;
           private $responseFactory;
-          private $url;
+          protected $urlnew;
           protected $orderRepository;
           protected $checkoutSession;
           protected $quoteRepository;
+          protected $resultFactory;
+          protected $response;
 
           public function __construct(
             \Veratad\AgeVerification\Model\Query\Api $veratadCall,
@@ -29,10 +31,12 @@
             \Veratad\AgeVerification\Helper\Cron $helperCron,
             \Veratad\AgeVerification\Model\HistoryFactory $history,
             \Magento\Framework\App\ResponseFactory $responseFactory,
-            \Magento\Framework\UrlInterface $url,
+            \Magento\Framework\UrlInterface $urlnew,
             \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
             \Magento\Checkout\Model\Session $checkoutSession,
-            \Magento\Quote\Api\CartRepositoryInterface $quoteRepository
+            \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
+            \Magento\Framework\Controller\ResultFactory $resultFactory,
+            \Magento\Framework\App\ResponseInterface $response
           ) {
            $this->_veratadCall = $veratadCall;
             $this->_isExcluded = $isExcluded;
@@ -42,10 +46,12 @@
             $this->helperCron = $helperCron;
             $this->_veratadHistory = $history;
             $this->responseFactory = $responseFactory;
-            $this->url = $url;
+            $this->urlnew = $urlnew;
             $this->orderRepository = $orderRepository;
             $this->checkoutSession = $checkoutSession;
             $this->quoteRepository = $quoteRepository;
+            $this->resultFactory = $resultFactory;
+            $this->_response = $response;
           }
 
 
@@ -99,9 +105,39 @@
                     }
                     $order->setVeratadAction("FAIL");
                     $order->save();
-                    $redirectionUrl = $this->url->getUrl("ageverification/dcams/display");
-                    $this->responseFactory->create()->setRedirect($redirectionUrl)->sendResponse();
-                    return $this;
+
+                  //$resultRedirect = $this->urlnew->create();
+                  //return $resultRedirect->setPath('ageverification/dcams/display');
+
+                  //$redirectionUrl = $this->urlnew->getUrl("ageverification/dcams/display");
+                  //$this->responseFactory->create()->setRedirect($redirectionUrl)->sendResponse();
+                //  return $this;
+
+
+                    //$controller = $observer->getControllerAction();
+                    //$url = $this->urlnew->getUrl('ageverification/dcams/display'); //Magento\Framework\UrlInterface $url
+                    //$controller->getResponse()->setRedirect($url);
+
+                    //$response = $observer->getControllerAction()->getResponse();
+                  //  $url = 'ageverification/dcams/display';
+                  //  $response->setRedirect($url);
+                  //  $response->sendResponse();
+                  //  exit;
+
+                    //$controller = $observer->getControllerAction();
+                    //$url = $this->urlnew->getUrl('ageverification/dcams/display'); //Magento\Framework\UrlInterface $url
+                  //  $controller->getResponse()->setRedirect($url);
+
+                  //$res = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
+                 //$res->setUrl($this->urlnew->getUrl('ageverification/dcams/display'));
+                // return $res;
+
+                //$response = $observer->getControllerAction()->getResponse();
+                //$url = 'ageverification/dcams/display';
+              //  $response->setRedirect($url);
+              //  $response->sendResponse();
+              //  exit;
+
                   }else{
                     $order->setVeratadAction("PASS");
                     $order->save();

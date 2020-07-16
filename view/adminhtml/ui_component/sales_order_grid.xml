@@ -9,6 +9,7 @@
             </item>
         </argument>
     </column>
+    <!--
     <column name="veratad_dialer">
         <argument name="data" xsi:type="array">
             <item name="config" xsi:type="array">
@@ -17,5 +18,6 @@
             </item>
         </argument>
     </column>
+    -->
 </columns>
 </listing>

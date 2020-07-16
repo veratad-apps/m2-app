@@ -92,7 +92,7 @@
             $result = $httpAdapter->read();
             $body = \Zend_Http_Response::extractBody($result);
 
-            $logger->info($body);
+            
 
             $array_result = $this->jsonHelper->jsonDecode($body);
 
@@ -136,5 +136,13 @@
               $order = $this->orderRepository->get($order_id);
               $order->setVeratadAction($action);
               $order->save();
+
+              if($status === "2"){
+                $successtext = $this->scopeConfig->getValue('settings/content/agematch_success_subtitle', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                return $this->messageManager->addSuccess(__($successtext));
+              }else{
+                $f = $this->scopeConfig->getValue('settings/content/dcams_failure', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+                return $this->messageManager->addError(__($f));
+              }
         }
       }
